@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Info, AlertTriangle, FileText, Mic, Search } from 'lucide-react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { Info, AlertTriangle, FileText, Mic, Search, ChevronRight, Activity, ShieldCheck, ThermometerSnowflake, HeartPulse, Pill, ArrowLeft } from 'lucide-react';
 import { MEDICINES, type Medicine } from '../services/medicalData';
 
 interface MedicineInfoProps {
@@ -10,6 +10,19 @@ export default function MedicineInfo({ lang }: MedicineInfoProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMed, setSelectedMed] = useState<Medicine | null>(null);
   const [isListening, setIsListening] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Dynamic Medicine Profile Generator (Type-Safe, crash-proof)
   const generateDynamicMedicine = (name: string): Medicine => {
@@ -106,12 +119,10 @@ export default function MedicineInfo({ lang }: MedicineInfoProps) {
     };
   };
 
-  // Memoized medicine list filter to prevent re-render loops
   const filteredMeds = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    if (!term) return MEDICINES;
+    if (!term) return [];
 
-    // Filter static medicine records
     const matches = MEDICINES.filter(med => 
       med && med.name && (
         med.name.toLowerCase().includes(term) ||
@@ -119,24 +130,14 @@ export default function MedicineInfo({ lang }: MedicineInfoProps) {
       )
     );
 
-    // Generate dynamic match if no exact match exists
     const hasExactMatch = MEDICINES.some(med => med && med.name && med.name.toLowerCase() === term);
     if (!hasExactMatch && term.length >= 1) {
       const dynamicMed = generateDynamicMedicine(searchTerm);
-      return [dynamicMed, ...matches];
+      return [dynamicMed, ...matches].slice(0, 8); // Limit dropdown size
     }
 
-    return matches;
+    return matches.slice(0, 8);
   }, [searchTerm]);
-
-  // Auto-select first matching medicine safely
-  useEffect(() => {
-    if (filteredMeds && filteredMeds.length > 0) {
-      setSelectedMed(filteredMeds[0]);
-    } else {
-      setSelectedMed(null);
-    }
-  }, [filteredMeds]);
 
   const handleVoiceSearch = () => {
     const SpeechRecognition = 
@@ -155,13 +156,13 @@ export default function MedicineInfo({ lang }: MedicineInfoProps) {
       const phrase = event.results[0][0].transcript;
       setSearchTerm(phrase);
       setIsListening(false);
+      setShowDropdown(true);
     };
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
     recognition.start();
   };
 
-  // Crash-proof text extractor helper
   const getMedText = (fieldData: any, langKey: string): string => {
     if (!fieldData) return 'No specific clinical information recorded.';
     if (typeof fieldData === 'string') return fieldData;
@@ -171,293 +172,519 @@ export default function MedicineInfo({ lang }: MedicineInfoProps) {
     return String(fieldData);
   };
 
+  const popularMeds = [
+    { name: 'Paracetamol', desc: 'Pain reliever & fever reducer' },
+    { name: 'Amoxicillin', desc: 'Antibiotic for bacterial infections' },
+    { name: 'Ibuprofen', desc: 'NSAID for pain and inflammation' },
+    { name: 'Omeprazole', desc: 'Reduces stomach acid (GERD)' },
+    { name: 'Lisinopril', desc: 'Treats high blood pressure' },
+    { name: 'Metformin', desc: 'Type 2 diabetes medication' }
+  ];
+
   return (
     <div className="fade-in" style={styles.container}>
-      <div style={styles.header}>
-        <FileText size={28} color="var(--clinic-primary)" />
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Medicine Reference Library</h2>
-      </div>
-
-      <div className="grid grid-cols-3" style={styles.layout}>
-        {/* Left Side: Search Panel */}
-        <div style={styles.searchPanel} className="glass-card">
-          <h3 style={styles.panelTitle}>Search Catalog</h3>
-          <p style={styles.panelDesc}>Search any drug name to view safe pharmacological reference values.</p>
-          
-          {/* Prevent form submission from reloading the app */}
-          <form onSubmit={(e) => e.preventDefault()} style={styles.searchBox}>
-            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-              <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '10px' }} />
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search any medicine (e.g. Paracetamol, Metformin)..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ width: '100%', paddingLeft: '32px', height: '40px' }}
-              />
+      
+      {!selectedMed ? (
+        // HERO SEARCH VIEW
+        <div style={styles.heroContainer}>
+          <div style={styles.heroBox}>
+            <div style={styles.heroIconBadge}>
+              <FileText size={32} color="#ffffff" />
             </div>
-            <button 
-              type="button" 
-              onClick={handleVoiceSearch} 
-              style={{
-                ...styles.micBtn,
-                backgroundColor: isListening ? 'var(--danger-light)' : 'var(--bg-secondary)',
-                color: isListening ? 'var(--danger)' : 'var(--text-muted)'
-              }}
-              title="Voice Search"
-            >
-              <Mic size={16} />
-            </button>
-          </form>
+            <h1 style={styles.heroTitle}>Medicine & Drug Directory</h1>
+            <p style={styles.heroSubtitle}>
+              Access our comprehensive pharmacological database. Search for detailed information on uses, side effects, and safety precautions.
+            </p>
 
-          <div style={styles.divider} />
+            <div style={styles.searchWrapper} ref={searchRef}>
+              <div style={styles.searchBox}>
+                <Search size={22} color="var(--text-muted)" style={{ position: 'absolute', left: '16px' }} />
+                <input
+                  type="text"
+                  placeholder="Search any medicine (e.g., Paracetamol, Amoxicillin)..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                  style={styles.searchInput}
+                />
+                <button 
+                  type="button" 
+                  onClick={handleVoiceSearch} 
+                  style={{
+                    ...styles.micBtn,
+                    backgroundColor: isListening ? 'var(--danger-light)' : 'transparent',
+                    color: isListening ? 'var(--danger)' : 'var(--text-muted)'
+                  }}
+                  title="Voice Search"
+                >
+                  <Mic size={20} />
+                </button>
+              </div>
 
-          {/* Matches List */}
-          <div style={styles.medsList}>
-            {filteredMeds.length === 0 ? (
-              <p style={styles.emptyText}>No matches found. Try typing a generic medicine name.</p>
-            ) : (
-              filteredMeds.map(med => {
-                const isSelected = selectedMed?.name === med.name;
-                const isDynamic = !MEDICINES.some(m => m.name === med.name);
-                return (
-                  <div
-                    key={med.name}
-                    onClick={() => setSelectedMed(med)}
-                    style={{
-                      ...styles.medItemCard,
-                      borderColor: isSelected ? 'var(--clinic-primary)' : 'var(--border-color)',
-                      backgroundColor: isSelected ? 'rgba(45, 212, 191, 0.08)' : 'var(--clinic-card-bg)',
-                      boxShadow: isSelected ? '0 0 10px rgba(45, 212, 191, 0.08)' : 'none'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <strong style={{ color: isSelected ? 'var(--clinic-primary)' : 'var(--text-main)', fontSize: '0.85rem' }}>
-                        {med.name}
-                      </strong>
-                      {isDynamic && (
-                        <span style={{ fontSize: '0.62rem', fontWeight: 800, backgroundColor: 'var(--clinic-primary)', color: 'var(--clinic-btn-text)', padding: '0.1rem 0.35rem', borderRadius: 'var(--radius-sm)' }}>
-                          AI Match
-                        </span>
-                      )}
-                    </div>
-                    <span style={styles.medCatLabel}>{med.category}</span>
-                  </div>
-                );
-              })
-            )}
+              {/* AUTOCOMPLETE DROPDOWN */}
+              {showDropdown && searchTerm.trim().length > 0 && (
+                <div style={styles.dropdownMenu}>
+                  {filteredMeds.length === 0 ? (
+                    <div style={styles.dropdownItemEmpty}>No matches found.</div>
+                  ) : (
+                    filteredMeds.map(med => {
+                      const isDynamic = !MEDICINES.some(m => m.name === med.name);
+                      return (
+                        <div
+                          key={med.name}
+                          style={styles.dropdownItem}
+                          onClick={() => {
+                            setSelectedMed(med);
+                            setShowDropdown(false);
+                            setSearchTerm('');
+                          }}
+                        >
+                          <div style={styles.dropdownItemIcon}>
+                            <Pill size={16} />
+                          </div>
+                          <div style={styles.dropdownItemContent}>
+                            <span style={styles.dropdownItemName}>{med.name}</span>
+                            <span style={styles.dropdownItemCat}>{med.category}</span>
+                          </div>
+                          {isDynamic && (
+                            <span style={styles.dynamicBadge}>AI Match</span>
+                          )}
+                          <ChevronRight size={16} color="var(--text-muted)" />
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={styles.popularSection}>
+            <h3 style={styles.popularTitle}>Most Searched Medicines</h3>
+            <div style={styles.popularGrid}>
+              {popularMeds.map((med, idx) => (
+                <div 
+                  key={idx} 
+                  style={styles.popularCard}
+                  onClick={() => {
+                    // Try to find it, otherwise AI generates it
+                    const found = MEDICINES.find(m => m.name.toLowerCase() === med.name.toLowerCase());
+                    if (found) setSelectedMed(found);
+                    else setSelectedMed(generateDynamicMedicine(med.name));
+                  }}
+                >
+                  <h4 style={styles.popularCardTitle}>{med.name}</h4>
+                  <p style={styles.popularCardDesc}>{med.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+      ) : (
+        // DRUG PROFILE VIEW
+        <div style={styles.profileContainer} className="fade-in">
+          <button style={styles.backBtn} onClick={() => setSelectedMed(null)}>
+            <ArrowLeft size={16} />
+            <span>Back to Search</span>
+          </button>
 
-        {/* Right Side: Details View */}
-        <div style={styles.detailsPanel} className="glass-card">
-          {selectedMed ? (
-            <div style={styles.detailsContent} className="fade-in">
-              <div style={styles.detailsHeader}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>{selectedMed.name}</h3>
-                  <span style={styles.medCatBadge}>{selectedMed.category}</span>
-                </div>
+          <div style={styles.profileHeader}>
+            <div style={styles.profileHeaderContent}>
+              <div style={styles.profileIconBox}>
+                <Pill size={36} color="var(--primary)" />
               </div>
-
-              {/* Warning Alert */}
-              <div style={styles.dosageWarning}>
-                <AlertTriangle size={18} color="var(--warning)" style={{ flexShrink: 0 }} />
-                <span>
-                  <strong>CRITICAL INFORMATION:</strong> In compliance with safety regulations, dosage quantities are omitted. Please consult your physician/pharmacist for exact dosing schedules.
-                </span>
-              </div>
-
-              {/* Details Sections */}
-              <div style={styles.infoBlocks}>
-                <div style={styles.infoBlock}>
-                  <strong style={styles.infoTitle}>Clinical Uses & Indication</strong>
-                  <p style={styles.infoText}>{getMedText(selectedMed.uses, lang)}</p>
-                </div>
-
-                <div style={styles.infoBlock}>
-                  <strong style={{ ...styles.infoTitle, color: 'var(--danger)' }}>Possible Side Effects</strong>
-                  <p style={styles.infoText}>{getMedText(selectedMed.sideEffects, lang)}</p>
-                </div>
-
-                <div style={styles.infoBlock}>
-                  <strong style={{ ...styles.infoTitle, color: 'var(--warning)' }}>Key Safety Precautions</strong>
-                  <p style={styles.infoText}>{getMedText(selectedMed.precautions, lang)}</p>
-                </div>
-
-                <div style={styles.infoBlock}>
-                  <strong style={styles.infoTitle}>Storage & Handling Instructions</strong>
-                  <p style={styles.infoText}>{getMedText(selectedMed.storage, lang)}</p>
-                </div>
+              <div>
+                <h2 style={styles.profileTitle}>{selectedMed.name}</h2>
+                <span style={styles.profileBadge}>{selectedMed.category}</span>
               </div>
             </div>
-          ) : (
-            <div style={styles.noMedSelected}>
-              <Info size={36} color="var(--text-light)" />
-              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800 }}>No Medicine Selected</h3>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                Type a drug name in the search bar to analyze custom pharmacological guides.
+          </div>
+
+          <div style={styles.warningBanner}>
+            <AlertTriangle size={24} color="#b45309" />
+            <div style={styles.warningTextContainer}>
+              <h4 style={styles.warningTitle}>CRITICAL DOSAGE INFORMATION</h4>
+              <p style={styles.warningText}>
+                In compliance with safety regulations, specific dosage quantities are omitted. Always consult your physician or pharmacist for exact dosing schedules and personalized medical advice.
               </p>
             </div>
-          )}
+          </div>
+
+          <div style={styles.detailsGrid}>
+            
+            <div style={styles.detailCard}>
+              <div style={styles.detailCardHeader}>
+                <div style={{ ...styles.detailIcon, backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                  <HeartPulse size={20} />
+                </div>
+                <h3 style={styles.detailTitle}>Clinical Uses & Indication</h3>
+              </div>
+              <p style={styles.detailText}>{getMedText(selectedMed.uses, lang)}</p>
+            </div>
+
+            <div style={styles.detailCard}>
+              <div style={styles.detailCardHeader}>
+                <div style={{ ...styles.detailIcon, backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                  <Activity size={20} />
+                </div>
+                <h3 style={styles.detailTitle}>Possible Side Effects</h3>
+              </div>
+              <p style={styles.detailText}>{getMedText(selectedMed.sideEffects, lang)}</p>
+            </div>
+
+            <div style={styles.detailCard}>
+              <div style={styles.detailCardHeader}>
+                <div style={{ ...styles.detailIcon, backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                  <ShieldCheck size={20} />
+                </div>
+                <h3 style={styles.detailTitle}>Key Safety Precautions</h3>
+              </div>
+              <p style={styles.detailText}>{getMedText(selectedMed.precautions, lang)}</p>
+            </div>
+
+            <div style={styles.detailCard}>
+              <div style={styles.detailCardHeader}>
+                <div style={{ ...styles.detailIcon, backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                  <ThermometerSnowflake size={20} />
+                </div>
+                <h3 style={styles.detailTitle}>Storage & Handling</h3>
+              </div>
+              <p style={styles.detailText}>{getMedText(selectedMed.storage, lang)}</p>
+            </div>
+
+          </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 }
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
   container: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1.25rem'
+    flexDirection: 'column',
+    width: '100%',
+    gap: '2rem'
   },
-  header: {
+  
+  // HERO VIEW
+  heroContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '3rem',
+    maxWidth: '1000px',
+    margin: '0 auto',
+    width: '100%'
+  },
+  heroBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    backgroundColor: 'var(--bg-card)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '4rem 2rem',
+    boxShadow: 'var(--shadow-sm)',
+    border: '1px solid var(--border-color)',
+    position: 'relative',
+    overflow: 'hidden'
+  },
+  heroIconBadge: {
+    width: '64px',
+    height: '64px',
+    borderRadius: '16px',
+    backgroundColor: 'var(--primary)',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.6rem'
+    justifyContent: 'center',
+    marginBottom: '1.5rem',
+    boxShadow: '0 8px 16px rgba(15, 118, 110, 0.2)'
   },
-  layout: {
-    width: '100%',
-    alignItems: 'stretch',
-    gap: '1.25rem'
+  heroTitle: {
+    fontSize: '2.5rem',
+    fontWeight: 800,
+    color: 'var(--text-main)',
+    margin: '0 0 1rem 0',
+    letterSpacing: '-0.02em'
   },
-  searchPanel: {
-    gridColumn: 'span 1',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1rem',
-    maxHeight: '520px',
-    overflowY: 'auto' as const,
-    padding: '1.25rem'
-  },
-  panelTitle: {
-    margin: 0,
-    fontSize: '0.98rem',
-    fontWeight: 800
-  },
-  panelDesc: {
-    margin: 0,
-    fontSize: '0.78rem',
+  heroSubtitle: {
+    fontSize: '1.1rem',
     color: 'var(--text-muted)',
-    lineHeight: 1.4
+    lineHeight: 1.6,
+    maxWidth: '600px',
+    margin: '0 0 2.5rem 0'
+  },
+  searchWrapper: {
+    width: '100%',
+    maxWidth: '650px',
+    position: 'relative'
   },
   searchBox: {
     display: 'flex',
-    gap: '0.5rem',
-    width: '100%'
+    alignItems: 'center',
+    backgroundColor: 'var(--bg-primary)',
+    borderRadius: 'var(--radius-full)',
+    border: '2px solid var(--border-color)',
+    padding: '0.5rem 1rem',
+    transition: 'border-color var(--transition-fast)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+  },
+  searchInput: {
+    flex: 1,
+    border: 'none',
+    backgroundColor: 'transparent',
+    padding: '0.75rem 1rem 0.75rem 3rem',
+    fontSize: '1.1rem',
+    color: 'var(--text-main)',
+    outline: 'none',
   },
   micBtn: {
     width: '40px',
     height: '40px',
-    borderRadius: 'var(--radius-sm)',
-    border: '1px solid var(--border-color)',
+    borderRadius: '50%',
+    border: 'none',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    transition: 'all var(--transition-fast)'
+    transition: 'all var(--transition-fast)',
   },
-  divider: {
-    height: '1px',
-    backgroundColor: 'var(--border-color)'
-  },
-  medsList: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.6rem',
-    overflowY: 'auto' as const
-  },
-  emptyText: {
-    fontSize: '0.82rem',
-    color: 'var(--text-muted)'
-  },
-  medItemCard: {
+  dropdownMenu: {
+    position: 'absolute',
+    top: '110%',
+    left: 0,
+    right: 0,
+    backgroundColor: 'var(--bg-card)',
+    borderRadius: 'var(--radius-md)',
     border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-sm)',
-    padding: '0.75rem 0.9rem',
+    boxShadow: 'var(--shadow-lg)',
+    maxHeight: '400px',
+    overflowY: 'auto',
+    zIndex: 100,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  dropdownItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    padding: '1rem',
     cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.2rem',
-    transition: 'all var(--transition-fast)'
+    borderBottom: '1px solid var(--border-color)',
+    transition: 'background-color 0.2s',
   },
-  medCatLabel: {
-    fontSize: '0.72rem',
-    color: 'var(--text-muted)'
+  dropdownItemEmpty: {
+    padding: '1.5rem',
+    textAlign: 'center',
+    color: 'var(--text-muted)',
+    fontSize: '0.95rem'
   },
-  detailsPanel: {
-    gridColumn: 'span 2',
-    minHeight: '400px',
+  dropdownItemIcon: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--bg-secondary)',
     display: 'flex',
-    flexDirection: 'column' as const,
-    justifyContent: 'center',
-    padding: '1.5rem'
-  },
-  noMedSelected: {
-    display: 'flex',
-    flexDirection: 'column' as const,
     alignItems: 'center',
     justifyContent: 'center',
-    textAlign: 'center' as const,
-    gap: '0.75rem',
-    padding: '2rem'
+    color: 'var(--primary)'
   },
-  detailsContent: {
+  dropdownItemContent: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1rem'
+    flexDirection: 'column',
+    flex: 1,
+    textAlign: 'left'
   },
-  detailsHeader: {
+  dropdownItemName: {
+    fontSize: '1rem',
+    fontWeight: 700,
+    color: 'var(--text-main)'
+  },
+  dropdownItemCat: {
+    fontSize: '0.8rem',
+    color: 'var(--text-muted)'
+  },
+  dynamicBadge: {
+    fontSize: '0.7rem',
+    fontWeight: 800,
+    backgroundColor: 'var(--primary)',
+    color: '#ffffff',
+    padding: '0.2rem 0.5rem',
+    borderRadius: 'var(--radius-sm)',
+  },
+
+  // POPULAR SECTION
+  popularSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+    width: '100%',
+  },
+  popularTitle: {
+    fontSize: '1.25rem',
+    fontWeight: 800,
+    color: 'var(--text-main)',
+    margin: 0
+  },
+  popularGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '1.25rem'
+  },
+  popularCard: {
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
+    borderRadius: 'var(--radius-md)',
+    padding: '1.25rem',
+    cursor: 'pointer',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem'
+  },
+  popularCardTitle: {
+    fontSize: '1.1rem',
+    fontWeight: 700,
+    color: 'var(--text-main)',
+    margin: 0
+  },
+  popularCardDesc: {
+    fontSize: '0.85rem',
+    color: 'var(--text-muted)',
+    margin: 0
+  },
+
+  // PROFILE VIEW
+  profileContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2rem',
+    width: '100%',
+    maxWidth: '1200px',
+    margin: '0 auto',
+  },
+  backBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    backgroundColor: 'transparent',
+    color: 'var(--text-muted)',
+    border: 'none',
+    fontSize: '0.95rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    width: 'fit-content',
+    padding: '0.5rem 0',
+  },
+  profileHeader: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    backgroundColor: 'var(--bg-card)',
+    padding: '2rem',
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--border-color)',
+    boxShadow: 'var(--shadow-sm)',
   },
-  medCatBadge: {
-    display: 'inline-block',
-    fontSize: '0.72rem',
-    backgroundColor: 'rgba(45, 212, 191, 0.08)',
-    color: 'var(--clinic-primary)',
-    fontWeight: 700,
-    padding: '0.15rem 0.5rem',
-    borderRadius: 'var(--radius-full)',
-    marginTop: '0.25rem'
-  },
-  dosageWarning: {
-    backgroundColor: 'var(--warning-light)',
-    color: 'var(--text-main)',
-    borderLeft: '4px solid var(--warning)',
-    padding: '0.65rem 0.85rem',
-    borderRadius: 'var(--radius-sm)',
+  profileHeaderContent: {
     display: 'flex',
-    gap: '0.6rem',
     alignItems: 'center',
-    fontSize: '0.78rem',
-    lineHeight: '1.4'
+    gap: '1.5rem'
   },
-  infoBlocks: {
+  profileIconBox: {
+    width: '72px',
+    height: '72px',
+    borderRadius: '16px',
+    backgroundColor: 'var(--primary-light)',
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.85rem'
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  infoBlock: {
-    backgroundColor: 'var(--bg-secondary)',
-    padding: '0.75rem 1rem',
-    borderRadius: 'var(--radius-sm)',
-    border: '1px solid var(--border-color)'
+  profileTitle: {
+    fontSize: '2.5rem',
+    fontWeight: 800,
+    color: 'var(--text-main)',
+    margin: '0 0 0.5rem 0'
   },
-  infoTitle: {
-    display: 'block',
-    fontSize: '0.82rem',
+  profileBadge: {
+    display: 'inline-block',
+    fontSize: '0.85rem',
+    backgroundColor: 'var(--primary-light)',
+    color: 'var(--primary)',
+    fontWeight: 700,
+    padding: '0.3rem 0.8rem',
+    borderRadius: 'var(--radius-full)'
+  },
+  warningBanner: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '1rem',
+    backgroundColor: '#fef3c7',
+    border: '1px solid #fde68a',
+    borderRadius: 'var(--radius-md)',
+    padding: '1.5rem',
+  },
+  warningTextContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem'
+  },
+  warningTitle: {
+    fontSize: '0.95rem',
+    fontWeight: 800,
+    color: '#92400e',
+    margin: 0
+  },
+  warningText: {
+    fontSize: '0.9rem',
+    color: '#92400e',
+    margin: 0,
+    lineHeight: 1.5
+  },
+  detailsGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '1.5rem',
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+    }
+  },
+  detailCard: {
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
+    borderRadius: 'var(--radius-md)',
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem'
+  },
+  detailCardHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem'
+  },
+  detailIcon: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  detailTitle: {
+    fontSize: '1.1rem',
     fontWeight: 700,
     color: 'var(--text-main)',
-    marginBottom: '0.25rem'
+    margin: 0
   },
-  infoText: {
-    margin: 0,
-    fontSize: '0.82rem',
+  detailText: {
+    fontSize: '0.95rem',
     color: 'var(--text-muted)',
-    lineHeight: '1.45'
+    lineHeight: 1.6,
+    margin: 0
   }
 };

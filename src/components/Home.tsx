@@ -1,20 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  ArrowRight, 
-  ArrowUpRight, 
-  Play, 
-  ShieldCheck, 
-  Activity, 
-  Sparkles, 
-  Check, 
-  Globe, 
-  Lock, 
-  Brain, 
-  Stethoscope, 
-  Users
+  ArrowRight, Activity, Calendar, Clock, Phone, MapPin, MessageSquare, 
+  HeartPulse, Pill, CalendarDays, User, CheckCircle2,
+  Brain, Bone, Baby, Eye, Ear, ShieldCheck, Mail
 } from 'lucide-react';
 import doctorHeroImg from '../assets/doctor_hero.png';
-import doctorNewsletterImg from '../assets/doctor_newsletter.png';
 
 interface HomeProps {
   setCurrentTab: (tab: string) => void;
@@ -22,22 +12,49 @@ interface HomeProps {
   lang: string;
 }
 
+interface Appointment {
+  id: string;
+  name: string;
+  department: string;
+  date: string;
+  time: string;
+}
+
 export default function Home({ setCurrentTab, setInitialChatText, lang }: HomeProps) {
   // Satisfy TS unused variable checks
   if (lang === 'xyz') console.log(lang);
 
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [formData, setFormData] = useState({ name: '', department: '', date: '', time: '' });
+  const [showToast, setShowToast] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  useEffect(() => {
+    const saved = localStorage.getItem('mediguide_appointments');
+    if (saved) {
+      try {
+        setAppointments(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse appointments');
+      }
+    }
+  }, []);
+
+  const handleBookAppointment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsletterEmail) return;
-    setSubscribed(true);
-    setTimeout(() => {
-      setNewsletterEmail('');
-      setSubscribed(false);
-    }, 4000);
+    if (!formData.name || !formData.department || !formData.date || !formData.time) return;
+
+    const newAppointment: Appointment = {
+      id: Date.now().toString(),
+      ...formData
+    };
+
+    const updated = [newAppointment, ...appointments];
+    setAppointments(updated);
+    localStorage.setItem('mediguide_appointments', JSON.stringify(updated));
+    
+    setFormData({ name: '', department: '', date: '', time: '' });
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const handleStartSearch = (query: string) => {
@@ -45,395 +62,403 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
     setCurrentTab('chat');
   };
 
+  const departments = [
+    { name: 'Cardiology', icon: HeartPulse, desc: 'Expert heart care and surgery.' },
+    { name: 'Neurology', icon: Brain, desc: 'Advanced brain and nerve treatments.' },
+    { name: 'Orthopedics', icon: Bone, desc: 'Bone, joint, and muscle specialists.' },
+    { name: 'Pediatrics', icon: Baby, desc: 'Compassionate care for children.' },
+    { name: 'Ophthalmology', icon: Eye, desc: 'Vision and eye health services.' },
+    { name: 'ENT', icon: Ear, desc: 'Ear, nose, and throat experts.' },
+  ];
+
+  const doctors = [
+    { name: 'Dr. Sarah Jenkins', spec: 'Cardiologist', qual: 'MD, FACC', days: 'Mon, Wed, Fri', time: '09:00 AM - 01:00 PM', available: true },
+    { name: 'Dr. Michael Chen', spec: 'Neurologist', qual: 'MD, PhD', days: 'Tue, Thu, Sat', time: '10:00 AM - 04:00 PM', available: true },
+    { name: 'Dr. Emily Rodriguez', spec: 'Pediatrician', qual: 'MD, FAAP', days: 'Mon - Fri', time: '08:00 AM - 02:00 PM', available: false },
+    { name: 'Dr. James Wilson', spec: 'Orthopedic Surgeon', qual: 'MD, FAAOS', days: 'Mon, Thu', time: '01:00 PM - 06:00 PM', available: true },
+    { name: 'Dr. Aisha Patel', spec: 'Dermatologist', qual: 'MD, FAAD', days: 'Wed, Fri, Sat', time: '09:00 AM - 03:00 PM', available: true },
+    { name: 'Dr. Robert Kim', spec: 'General Physician', qual: 'MD, FACP', days: 'Mon - Sat', time: '08:00 AM - 08:00 PM', available: true },
+  ];
+
   return (
     <div style={styles.pageContainer}>
       
-      {/* 1. TOP HEALTHAI SUB-HEADER NAVIGATION BAR */}
+      {/* HEADER */}
       <header style={styles.topHeaderNav}>
         <div style={styles.logoGroup} onClick={() => setCurrentTab('home')}>
           <div style={styles.logoIconBadge}>
             <Activity size={18} color="#000" />
           </div>
-          <span style={styles.logoText}>HealthAI</span>
+          <span style={styles.logoText}>MediGuide Hospital</span>
         </div>
 
         <nav style={styles.headerMenuNav}>
           <button style={{ ...styles.menuLink, color: 'var(--text-main)', fontWeight: 800 }}>Home</button>
-          <button style={styles.menuLink} onClick={() => setCurrentTab('diseases')}>About Us</button>
-          <button style={styles.menuLink} onClick={() => setCurrentTab('firstaid')}>Innovation</button>
-          <button style={styles.menuLink} onClick={() => setCurrentTab('labs')}>Research</button>
-          <button style={styles.menuLink} onClick={() => setCurrentTab('hospitals')}>Careers</button>
-          <button style={styles.menuLink} onClick={() => setCurrentTab('chat')}>Blog</button>
+          <button style={styles.menuLink} onClick={() => document.getElementById('departments')?.scrollIntoView({ behavior: 'smooth' })}>Departments</button>
+          <button style={styles.menuLink} onClick={() => document.getElementById('doctors')?.scrollIntoView({ behavior: 'smooth' })}>Doctors</button>
+          <button style={styles.menuLink} onClick={() => setCurrentTab('chat')}>AI Support</button>
         </nav>
 
         <button 
           style={styles.headerCtaBtn}
-          onClick={() => setCurrentTab('chat')}
+          onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}
         >
-          <span>Our Solutions</span>
+          <span>Book Appointment</span>
           <ArrowRight size={14} />
         </button>
       </header>
 
-
-      {/* 2. HERO BENTO GRID SECTION */}
-      <section style={styles.heroGridSection}>
-        
-        {/* Left Giant Card: Lime Pastel Grid Hero Banner */}
-        <div style={styles.heroMainCard}>
-          <div style={styles.heroGridBgOverlay} />
-
+      {/* HERO SECTION */}
+      <section style={styles.heroSection}>
+        <div style={styles.heroContent}>
+          <div style={styles.badgeLabel}>
+            <ShieldCheck size={14} />
+            <span>Trusted Healthcare Excellence</span>
+          </div>
           <h1 style={styles.heroTitle}>
-            Transforming <br />
-            Healthcare with <br />
-            Artificial Intelligence!
+            Advanced Care.<br />
+            <span style={{ color: 'var(--primary)' }}>Compassionate Healing.</span>
           </h1>
-
           <p style={styles.heroSubtitle}>
-            Empowering your health journey with cutting-edge AI solutions for better diagnosis, personalized care, and faster results.
+            Providing world-class medical services with state-of-the-art facilities, expert specialists, and our revolutionary AI medical assistant.
           </p>
-
           <div style={styles.heroCtaRow}>
-            <button 
-              style={styles.heroDarkPillBtn}
-              onClick={() => handleStartSearch("Start my comprehensive health AI checkup")}
-            >
-              <span>Get Started</span>
-              <ArrowRight size={16} />
+            <button style={styles.primaryBtn} onClick={() => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Calendar size={16} /> Book an Appointment
             </button>
-
-            <button 
-              style={styles.heroGlassPillBtn}
-              onClick={() => setShowDemoModal(true)}
-            >
-              <Play size={14} fill="currentColor" />
-              <span>Watch Demo</span>
+            <button style={styles.secondaryBtn} onClick={() => handleStartSearch("I need help understanding my symptoms")}>
+              <Activity size={16} /> Try AI Symptom Checker
             </button>
           </div>
-
-          {/* User Avatars Floating Badge */}
-          <div style={styles.heroAvatarsBadge}>
-            <div style={styles.stackedAvatars}>
-              <div style={{ ...styles.avatarCircle, backgroundColor: '#0284c7' }}>🩺</div>
-              <div style={{ ...styles.avatarCircle, backgroundColor: '#0d9488', marginLeft: '-8px' }}>👨‍⚕️</div>
-              <div style={{ ...styles.avatarCircle, backgroundColor: '#7c3aed', marginLeft: '-8px' }}>👩‍⚕️</div>
+          <div style={styles.statsRow}>
+            <div style={styles.statItem}>
+              <h3 style={styles.statNumber}>150+</h3>
+              <p style={styles.statLabel}>Specialist Doctors</p>
             </div>
-            <span style={styles.avatarBadgeText}>+23 Specialists Online</span>
+            <div style={styles.statDivider} />
+            <div style={styles.statItem}>
+              <h3 style={styles.statNumber}>24/7</h3>
+              <p style={styles.statLabel}>Emergency Services</p>
+            </div>
+            <div style={styles.statDivider} />
+            <div style={styles.statItem}>
+              <h3 style={styles.statNumber}>50k+</h3>
+              <p style={styles.statLabel}>Happy Patients</p>
+            </div>
           </div>
         </div>
-
-        {/* Right Top Card: Doctor Hero Image & Metric */}
-        <div style={styles.heroDoctorCard}>
-          <img 
-            src={doctorHeroImg} 
-            alt="Trusted Healthcare Collaborator" 
-            style={styles.doctorImg}
-          />
-          <div style={styles.doctorOverlayBadge}>
-            <div style={styles.badgeIconCircle}>
-              <Users size={14} color="#000" />
+        <div style={styles.heroImageWrapper}>
+          <div style={styles.heroImageBg} />
+          <img src={doctorHeroImg} alt="Professional Doctor" style={styles.heroImage} />
+          {/* Floating badge */}
+          <div style={styles.floatingBadge}>
+            <div style={styles.floatingIconBox}>
+              <Phone size={18} color="var(--primary)" />
             </div>
             <div>
-              <span style={styles.badgeSmallLabel}>Our Trusted Collaborators</span>
-              <h4 style={styles.badgeBigMetric}>49K+ <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)' }}>Global Research Partnerships</span></h4>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Bottom Card: Platform Progress Card */}
-        <div style={styles.heroProgressCard}>
-          <div style={styles.tagChipsRow}>
-            <span style={styles.miniTagChip}>Smart</span>
-            <span style={styles.miniTagChip}>Secure</span>
-            <span style={styles.miniTagChip}>Scientific</span>
-            <span style={styles.miniTagChip}>Scalable</span>
-          </div>
-
-          <h3 style={styles.progressCardTitle}>Trusted Platform for Progress</h3>
-
-          {/* Floating 3D Orbit Nodes */}
-          <div style={styles.orbitNodesContainer}>
-            <div style={{ ...styles.orbitNode, backgroundColor: 'rgba(124, 58, 237, 0.15)', color: '#7c3aed', top: '10px', right: '40px' }}>
-              <Brain size={16} />
-            </div>
-            <div style={{ ...styles.orbitNode, backgroundColor: 'rgba(13, 148, 136, 0.15)', color: '#0d9488', bottom: '15px', right: '80px' }}>
-              <ShieldCheck size={16} />
-            </div>
-            <div style={{ ...styles.orbitNode, backgroundColor: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', bottom: '25px', left: '30px' }}>
-              <Stethoscope size={16} />
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-
-      {/* 3. SECTION: HOW OUR AI WORKS FOR YOU */}
-      <section style={styles.howItWorksSection}>
-        <div style={styles.sectionHeaderRow}>
-          <div>
-            <h2 style={styles.sectionBigTitle}>How Our AI <br />Works for You</h2>
-          </div>
-          <div style={{ maxWidth: '440px' }}>
-            <p style={styles.sectionDescText}>
-              AI is revolutionizing healthcare by enabling faster, more accurate diagnoses, personalized treatment plans, and improved patient outcomes. Experience the power of AI in healthcare today.
-            </p>
-            <button 
-              style={styles.viewMoreBtn}
-              onClick={() => setCurrentTab('chat')}
-            >
-              <span>View More</span>
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* 3 Bento Feature Cards */}
-        <div style={styles.featureCardsGrid}>
-          
-          {/* Card 01 */}
-          <div style={styles.bentoFeatureCard} onClick={() => handleStartSearch("Explain personalized treatment AI recommendations")}>
-            <div style={styles.cardTopBar}>
-              <span style={styles.cardCategoryTitle}>Personalized Care</span>
-              <div style={styles.arrowIconBtn}><ArrowUpRight size={16} /></div>
-            </div>
-            <p style={styles.cardDesc}>
-              The AI generates personalized treatment suggestions to guide healthcare providers in making informed clinical decisions.
-            </p>
-            <div style={styles.cardFooter}>
-              <Sparkles size={16} color="var(--primary)" />
-              <span style={styles.cardNumberText}>01</span>
-            </div>
-          </div>
-
-          {/* Card 02 */}
-          <div style={styles.bentoFeatureCardActive} onClick={() => handleStartSearch("How does medical data collection work?")}>
-            <div style={styles.cardTopBar}>
-              <span style={styles.cardCategoryTitle}>Data Collection</span>
-              <div style={styles.arrowIconBtnActive}><ArrowUpRight size={16} /></div>
-            </div>
-            <p style={styles.cardDesc}>
-              Our AI models gather health data from multiple sources like patient records, wearable devices, and diagnostic medical scans.
-            </p>
-            <div style={styles.cardFooter}>
-              <Activity size={16} color="var(--primary)" />
-              <span style={styles.cardNumberText}>02</span>
-            </div>
-          </div>
-
-          {/* Card 03 */}
-          <div style={styles.bentoFeatureCard} onClick={() => handleStartSearch("How does continuous health telemetry monitoring work?")}>
-            <div style={styles.cardTopBar}>
-              <span style={styles.cardCategoryTitle}>Continuous Monitoring</span>
-              <div style={styles.arrowIconBtn}><ArrowUpRight size={16} /></div>
-            </div>
-            <p style={styles.cardDesc}>
-              Our AI technology monitors progress and adjusts the care plan as needed, ensuring optimal long-term health outcomes.
-            </p>
-            <div style={styles.cardFooter}>
-              <ShieldCheck size={16} color="var(--primary)" />
-              <span style={styles.cardNumberText}>03</span>
+              <p style={styles.floatingBadgeText}>Emergency Hotline</p>
+              <h4 style={styles.floatingBadgeTitle}>1-800-MED-HELP</h4>
             </div>
           </div>
         </div>
       </section>
 
+      {/* QUICK ACTIONS */}
+      <section style={styles.quickActionsGrid}>
+        <div style={styles.actionCard} onClick={() => handleStartSearch("Start symptom assessment")}>
+          <div style={{ ...styles.actionIcon, backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+            <Activity size={24} />
+          </div>
+          <h3 style={styles.actionTitle}>AI Symptom Checker</h3>
+          <p style={styles.actionDesc}>Get instant AI-driven preliminary assessments.</p>
+        </div>
+        <div style={styles.actionCard} onClick={() => setCurrentTab('chat')}>
+          <div style={{ ...styles.actionIcon, backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+            <MessageSquare size={24} />
+          </div>
+          <h3 style={styles.actionTitle}>AI Doctor Chat</h3>
+          <p style={styles.actionDesc}>Ask medical questions and get detailed explanations.</p>
+        </div>
+        <div style={styles.actionCard} onClick={() => setCurrentTab('hospitals')}>
+          <div style={{ ...styles.actionIcon, backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+            <MapPin size={24} />
+          </div>
+          <h3 style={styles.actionTitle}>Find Hospitals</h3>
+          <p style={styles.actionDesc}>Locate nearby healthcare facilities instantly.</p>
+        </div>
+        <div style={styles.actionCard} onClick={() => setCurrentTab('firstaid')}>
+          <div style={{ ...styles.actionIcon, backgroundColor: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
+            <Pill size={24} />
+          </div>
+          <h3 style={styles.actionTitle}>Medicine Info</h3>
+          <p style={styles.actionDesc}>Search for drugs, side effects, and dosages.</p>
+        </div>
+      </section>
 
-
-      {/* 4. SECTION: WHY CHOOSE OUR AI HEALTH SOLUTIONS? */}
-      <section style={styles.whyChooseSection}>
-        <div style={styles.centerSectionHeader}>
-          <h2 style={styles.centerTitle}>Why Choose Our AI Health <br />Solutions?</h2>
-          <p style={styles.centerSubtitle}>
-            The AI generates personalized treatment suggestions to guide healthcare providers and patients in making informed decisions.
+      {/* WORKING HOURS & BOOKING ROW */}
+      <section style={styles.bookingRow} id="booking">
+        {/* Working Hours */}
+        <div style={styles.workingHoursCard}>
+          <div style={styles.sectionHeader}>
+            <Clock size={24} color="var(--primary)" />
+            <h2 style={styles.sectionTitle}>Working Hours</h2>
+          </div>
+          <p style={styles.workingDesc}>
+            Our facilities operate round-clock for emergencies. Regular OPD consultations follow the schedule below.
           </p>
-        </div>
-
-        <div style={styles.whyGrid}>
           
-          {/* Card: Improved Accuracy */}
-          <div style={styles.whyCard}>
-            <span style={styles.whyCardLabel}>Improved Accuracy</span>
-            <h4 style={styles.whyCardSub}>Served Across Regions</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Assist in diagnosing conditions with greater precision, reducing diagnostic errors worldwide.
-            </p>
-            
-            {/* Country Pill Badges */}
-            <div style={styles.countryPillGrid}>
-              <span style={styles.countryPill}>🇺🇸 United States</span>
-              <span style={styles.countryPill}>🇬🇧 United Kingdom</span>
-              <span style={styles.countryPill}>🇨🇭 Switzerland</span>
-              <span style={styles.countryPill}>🇵🇱 Poland</span>
+          <div style={styles.scheduleList}>
+            <div style={styles.scheduleItem}>
+              <span style={styles.scheduleDay}>Monday - Friday</span>
+              <span style={styles.scheduleTime}>08:00 AM - 08:00 PM</span>
+            </div>
+            <div style={styles.scheduleItem}>
+              <span style={styles.scheduleDay}>Saturday</span>
+              <span style={styles.scheduleTime}>09:00 AM - 05:00 PM</span>
+            </div>
+            <div style={styles.scheduleItem}>
+              <span style={styles.scheduleDay}>Sunday</span>
+              <span style={{ ...styles.scheduleTime, color: 'var(--danger)', fontWeight: 600 }}>Emergency Only (24/7)</span>
             </div>
           </div>
 
-          {/* Card: 24/7 Access */}
-          <div style={styles.whyCard}>
-            <span style={styles.whyCardLabel}>24/7 Access</span>
-            <h4 style={styles.whyCardSub}>Online Consultations Completed</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Our AI tools are available anytime to assist doctors and patients with continuous care support.
-            </p>
+          <div style={styles.emergencyBox}>
+            <Phone size={20} />
+            <div>
+              <span style={{ display: 'block', fontSize: '0.8rem', opacity: 0.9 }}>Emergency Ambulance</span>
+              <strong style={{ fontSize: '1.1rem' }}>911 or +1 234 567 890</strong>
+            </div>
+          </div>
+        </div>
 
-            <div style={styles.accessSphereVisual}>
-              <div style={styles.sphereOrb}>
-                <Globe size={32} color="var(--primary)" />
+        {/* Booking Form */}
+        <div style={styles.bookingCard}>
+          <h2 style={styles.bookingTitle}>Book an Appointment</h2>
+          <p style={styles.bookingSubtitle}>Schedule your visit with our specialists.</p>
+          
+          <form style={styles.bookingForm} onSubmit={handleBookAppointment}>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Patient Name</label>
+              <input 
+                type="text" 
+                style={styles.formInput} 
+                placeholder="Full Name" 
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
+                required 
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Department / Specialty</label>
+              <select 
+                style={styles.formInput}
+                value={formData.department}
+                onChange={e => setFormData({...formData, department: e.target.value})}
+                required
+              >
+                <option value="">Select Department</option>
+                {departments.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
+                <option value="General">General Consultation</option>
+              </select>
+            </div>
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Date</label>
+                <input 
+                  type="date" 
+                  style={styles.formInput} 
+                  value={formData.date}
+                  onChange={e => setFormData({...formData, date: e.target.value})}
+                  required 
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Time Slot</label>
+                <select 
+                  style={styles.formInput}
+                  value={formData.time}
+                  onChange={e => setFormData({...formData, time: e.target.value})}
+                  required
+                >
+                  <option value="">Select Time</option>
+                  <option value="Morning (09:00 - 12:00)">Morning (09:00 - 12:00)</option>
+                  <option value="Afternoon (13:00 - 16:00)">Afternoon (13:00 - 16:00)</option>
+                  <option value="Evening (17:00 - 19:00)">Evening (17:00 - 19:00)</option>
+                </select>
               </div>
             </div>
-          </div>
-
-        </div>
-      </section>
-
-
-
-      {/* 6. SECTION: SUBSCRIBE TO NEWSLETTER BANNER */}
-      <section style={styles.newsletterBanner}>
-        <div style={styles.newsletterLeftContent}>
-          <h2 style={styles.newsletterTitle}>Subscribe to <br />newsletter</h2>
-
-          <form style={styles.newsletterForm} onSubmit={handleSubscribe}>
-            <input 
-              type="email" 
-              placeholder="Enter your email address" 
-              style={styles.newsletterInput}
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              required
-            />
-            <button type="submit" style={styles.newsletterSubmitBtn}>
-              {subscribed ? <Check size={16} /> : <span>Subscribe</span>}
+            <button type="submit" style={styles.submitBtn}>
+              {showToast ? <CheckCircle2 size={18} /> : 'Confirm Booking'}
             </button>
           </form>
 
-          {subscribed && (
-            <div style={styles.subscribeSuccessToast}>
-              <Check size={14} /> Subscribed successfully! Thank you for joining HealthAI.
+          {appointments.length > 0 && (
+            <div style={styles.recentBookings}>
+              <h4 style={styles.recentBookingsTitle}>Your Appointments</h4>
+              <div style={styles.appointmentsList}>
+                {appointments.slice(0, 2).map(apt => (
+                  <div key={apt.id} style={styles.appointmentBadge}>
+                    <CalendarDays size={14} color="var(--primary)" />
+                    <span>{apt.department} on {apt.date}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-
-          {/* Floating Category Tag Pills */}
-          <div style={styles.newsletterTagsRow}>
-            <span style={styles.newsletterTagChip}>🩺 AI-powered health</span>
-            <span style={styles.newsletterTagChip}>🍏 Wellness</span>
-            <span style={styles.newsletterTagChip}>💡 Smart health</span>
-            <span style={styles.newsletterTagChip}>🔍 Symptom checker</span>
-          </div>
-        </div>
-
-        <div style={styles.newsletterRightDoctor}>
-          <img 
-            src={doctorNewsletterImg} 
-            alt="HealthAI Doctor Newsletter" 
-            style={styles.doctorNewsletterImg}
-          />
         </div>
       </section>
 
+      {/* SPECIALIST DOCTORS */}
+      <section style={styles.sectionContainer} id="doctors">
+        <div style={styles.sectionHeaderCenter}>
+          <span style={styles.badgeLabel}>Our Medical Team</span>
+          <h2 style={styles.sectionBigTitle}>Meet Our Specialist Doctors</h2>
+          <p style={styles.sectionDescTextCenter}>
+            Highly qualified professionals dedicated to providing the best healthcare services.
+          </p>
+        </div>
 
-      {/* 7. FOOTER NAVIGATION */}
+        <div style={styles.doctorsGrid}>
+          {doctors.map((doc, idx) => (
+            <div key={idx} style={styles.doctorCard}>
+              <div style={styles.docCardHeader}>
+                <div style={styles.docAvatarBox}>
+                  <User size={24} color="var(--primary)" />
+                </div>
+                <div style={styles.docStatusBadge} data-available={doc.available ? "true" : "false"}>
+                  <span style={{ 
+                    width: 6, height: 6, borderRadius: '50%', 
+                    backgroundColor: doc.available ? 'var(--success)' : 'var(--text-muted)' 
+                  }} />
+                  {doc.available ? 'Available Today' : 'Next: Tomorrow'}
+                </div>
+              </div>
+              <h3 style={styles.docName}>{doc.name}</h3>
+              <p style={styles.docSpec}>{doc.spec} • <span style={{ opacity: 0.7 }}>{doc.qual}</span></p>
+              
+              <div style={styles.docScheduleBox}>
+                <div style={styles.docScheduleRow}>
+                  <Calendar size={14} color="var(--text-muted)" />
+                  <span>{doc.days}</span>
+                </div>
+                <div style={styles.docScheduleRow}>
+                  <Clock size={14} color="var(--text-muted)" />
+                  <span>{doc.time}</span>
+                </div>
+              </div>
+
+              <button 
+                style={styles.docBookBtn}
+                onClick={() => {
+                  setFormData({ ...formData, department: doc.spec });
+                  document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Book Consultation
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* DEPARTMENTS */}
+      <section style={styles.sectionContainer} id="departments">
+        <div style={styles.sectionHeaderCenter}>
+          <span style={styles.badgeLabel}>Specialties</span>
+          <h2 style={styles.sectionBigTitle}>Hospital Departments</h2>
+        </div>
+        
+        <div style={styles.departmentsGrid}>
+          {departments.map((dept, i) => {
+            const Icon = dept.icon;
+            return (
+              <div key={i} style={styles.deptCard}>
+                <div style={styles.deptIconBox}>
+                  <Icon size={24} color="var(--primary)" />
+                </div>
+                <h4 style={styles.deptTitle}>{dept.name}</h4>
+                <p style={styles.deptDesc}>{dept.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* FOOTER */}
       <footer style={styles.footerContainer}>
         <div style={styles.footerTopGrid}>
           
           <div style={{ maxWidth: '300px' }}>
             <div style={styles.logoGroup}>
-              <div style={styles.logoIconBadge}>
-                <Activity size={18} color="#000" />
+              <div style={{...styles.logoIconBadge, backgroundColor: 'rgba(255,255,255,0.1)'}}>
+                <Activity size={18} color="#fff" />
               </div>
-              <span style={styles.logoText}>HealthAI</span>
+              <span style={{...styles.logoText, color: '#fff'}}>MediGuide Hospital</span>
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.75rem', lineHeight: 1.5 }}>
-              Healthcare tools are intended to assist, not replace clinical professionals. Always consult your provider for medical advice.
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginTop: '1rem', lineHeight: 1.6 }}>
+              Providing world-class healthcare combined with cutting-edge AI technology for better patient outcomes.
             </p>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', color: 'rgba(255,255,255,0.8)' }}>
+              <Phone size={18} />
+              <Mail size={18} />
+              <MapPin size={18} />
+            </div>
+          </div>
+
+          <div>
+            <h4 style={styles.footerColTitle}>Departments</h4>
+            <div style={styles.footerLinksList}>
+              <span style={styles.footerLink}>Cardiology</span>
+              <span style={styles.footerLink}>Neurology</span>
+              <span style={styles.footerLink}>Orthopedics</span>
+              <span style={styles.footerLink}>Pediatrics</span>
+            </div>
           </div>
 
           <div>
             <h4 style={styles.footerColTitle}>Quick Links</h4>
             <div style={styles.footerLinksList}>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('home')}>Home</button>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('diseases')}>About Us</button>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('chat')}>Blog</button>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('hospitals')}>Contact Us</button>
+              <span style={styles.footerLink} onClick={() => setCurrentTab('home')}>Home</span>
+              <span style={styles.footerLink} onClick={() => document.getElementById('doctors')?.scrollIntoView()}>Find a Doctor</span>
+              <span style={styles.footerLink} onClick={() => document.getElementById('booking')?.scrollIntoView()}>Book Appointment</span>
+              <span style={styles.footerLink} onClick={() => setCurrentTab('chat')}>AI Assistant</span>
             </div>
           </div>
 
           <div>
-            <h4 style={styles.footerColTitle}>AI Technology</h4>
-            <div style={styles.footerLinksList}>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('chat')}>AI-powered health</button>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('firstaid')}>Wellness</button>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('labs')}>Smart health</button>
-              <button style={styles.footerLink} onClick={() => setCurrentTab('diseases')}>Symptom checker</button>
-            </div>
-          </div>
-
-          <div>
-            <h4 style={styles.footerColTitle}>Security</h4>
-            <div style={styles.footerLinksList}>
-              <span style={styles.footerStaticText}><Lock size={12} /> HIPAA Compliant</span>
-              <span style={styles.footerStaticText}><ShieldCheck size={12} /> 256-bit Encryption</span>
-              <span style={styles.footerStaticText}><Check size={12} /> ISO 27001 Certified</span>
-            </div>
+            <h4 style={styles.footerColTitle}>Address</h4>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
+              123 Medical Center Blvd<br />
+              Healthcare City, HC 90210<br />
+              Open 24/7 for Emergencies
+            </p>
           </div>
 
         </div>
 
         <div style={styles.footerBottomRow}>
-          <span>© 2026 HealthAI. All rights reserved.</span>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <span>© 2026 MediGuide Hospital & AI Platform. All rights reserved.</span>
+          <div style={{ display: 'flex', gap: '1.5rem' }}>
             <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
-            <span style={{ cursor: 'pointer' }}>Terms & Conditions</span>
+            <span style={{ cursor: 'pointer' }}>Terms of Service</span>
           </div>
         </div>
       </footer>
-
-
-      {/* DEMO INTERACTIVE MODAL */}
-      {showDemoModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowDemoModal(false)}>
-          <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-main)' }}>
-              HealthAI Platform Overview Demo
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0.5rem 0 1.25rem 0' }}>
-              Experience how our Artificial Intelligence platform synthesizes patient records, diagnostic scans, and clinical telemetry to deliver high-precision recommendations.
-            </p>
-            <div style={{ padding: '1.25rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)' }}>
-                <Brain size={18} />
-                <span>Neural Diagnostic Model Active</span>
-              </div>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Processing multi-vector symptom checks and differential diagnosis matching in sub-second response times.
-              </span>
-            </div>
-            <button 
-              style={{ ...styles.heroDarkPillBtn, width: '100%', marginTop: '1.25rem', justifyContent: 'center' }}
-              onClick={() => {
-                setShowDemoModal(false);
-                setCurrentTab('chat');
-              }}
-            >
-              <span>Launch Live AI Assistant</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
 
     </div>
   );
 }
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
   pageContainer: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '2.5rem',
+    flexDirection: 'column',
+    gap: '4rem',
     width: '100%',
-    paddingBottom: '2rem'
+    paddingBottom: '0rem'
   },
+  
+  // HEADER
   topHeaderNav: {
     display: 'flex',
     alignItems: 'center',
@@ -442,7 +467,10 @@ const styles = {
     padding: '0.75rem 1.5rem',
     borderRadius: 'var(--radius-full)',
     border: '1px solid var(--border-color)',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+    boxShadow: 'var(--shadow-sm)',
+    position: 'sticky',
+    top: '1rem',
+    zIndex: 50,
   },
   logoGroup: {
     display: 'flex',
@@ -454,11 +482,10 @@ const styles = {
     width: '32px',
     height: '32px',
     borderRadius: '50%',
-    backgroundColor: '#86efac',
+    backgroundColor: 'var(--primary-light)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 0 12px rgba(134, 239, 172, 0.6)'
   },
   logoText: {
     fontSize: '1.25rem',
@@ -468,15 +495,14 @@ const styles = {
   },
   headerMenuNav: {
     display: 'flex',
-    alignItems: 'center',
-    gap: '1.5rem'
+    gap: '1.5rem',
   },
   menuLink: {
     background: 'none',
     border: 'none',
-    fontSize: '0.85rem',
-    fontWeight: 600,
     color: 'var(--text-muted)',
+    fontSize: '0.9rem',
+    fontWeight: 600,
     cursor: 'pointer',
     transition: 'color var(--transition-fast)'
   },
@@ -484,580 +510,562 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    backgroundColor: 'var(--text-main)',
-    color: 'var(--bg-primary)',
+    backgroundColor: 'var(--primary)',
+    color: '#ffffff',
     border: 'none',
-    padding: '0.55rem 1.2rem',
+    padding: '0.6rem 1.25rem',
+    borderRadius: 'var(--radius-full)',
+    fontSize: '0.9rem',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'background-color var(--transition-fast)'
+  },
+
+  // HERO
+  heroSection: {
+    display: 'grid',
+    gridTemplateColumns: '1.2fr 1fr',
+    gap: '2rem',
+    alignItems: 'center',
+    minHeight: '600px',
+  },
+  heroContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+  },
+  badgeLabel: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    backgroundColor: 'var(--primary-light)',
+    color: 'var(--primary)',
+    padding: '0.4rem 0.8rem',
     borderRadius: 'var(--radius-full)',
     fontSize: '0.85rem',
     fontWeight: 700,
-    cursor: 'pointer'
-  },
-  heroGridSection: {
-    display: 'grid',
-    gridTemplateColumns: '1.3fr 0.8fr',
-    gridTemplateRows: 'auto auto',
-    gap: '1.25rem'
-  },
-  heroMainCard: {
-    gridRow: '1 / span 2',
-    position: 'relative' as const,
-    backgroundColor: '#dcfce7', // Soft mint/lime pastel matching mockup
-    borderRadius: 'var(--radius-lg)',
-    padding: '2.5rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    justifyContent: 'space-between',
-    minHeight: '440px',
-    overflow: 'hidden',
-    border: '1px solid rgba(134, 239, 172, 0.4)'
-  },
-  heroGridBgOverlay: {
-    position: 'absolute' as const,
-    inset: 0,
-    backgroundImage: 'radial-gradient(#bbf7d0 1px, transparent 1px)',
-    backgroundSize: '24px 24px',
-    opacity: 0.6,
-    pointerEvents: 'none' as const
+    width: 'fit-content'
   },
   heroTitle: {
-    position: 'relative' as const,
-    zIndex: 2,
-    fontSize: '2.4rem',
-    fontWeight: 900,
-    color: '#052e16',
-    lineHeight: 1.12,
+    fontSize: '3.5rem',
+    lineHeight: 1.1,
+    fontWeight: 800,
+    color: 'var(--text-main)',
     letterSpacing: '-0.03em',
-    margin: 0
+    margin: 0,
   },
   heroSubtitle: {
-    position: 'relative' as const,
-    zIndex: 2,
-    fontSize: '0.92rem',
-    color: '#166534',
-    margin: '1.25rem 0',
-    maxWidth: '480px',
-    lineHeight: 1.5
+    fontSize: '1.1rem',
+    color: 'var(--text-muted)',
+    lineHeight: 1.6,
+    maxWidth: '90%',
+    margin: 0,
   },
   heroCtaRow: {
-    position: 'relative' as const,
-    zIndex: 2,
     display: 'flex',
-    alignItems: 'center',
-    gap: '0.85rem',
-    marginTop: '1rem'
+    gap: '1rem',
+    marginTop: '1rem',
   },
-  heroDarkPillBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.6rem',
-    backgroundColor: '#052e16',
-    color: '#ffffff',
-    border: 'none',
-    padding: '0.75rem 1.4rem',
-    borderRadius: 'var(--radius-full)',
-    fontSize: '0.9rem',
-    fontWeight: 800,
-    cursor: 'pointer',
-    boxShadow: '0 4px 14px rgba(5, 46, 22, 0.25)'
-  },
-  heroGlassPillBtn: {
+  primaryBtn: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    backdropFilter: 'blur(8px)',
-    color: '#052e16',
-    border: '1px solid rgba(255, 255, 255, 0.9)',
-    padding: '0.75rem 1.4rem',
-    borderRadius: 'var(--radius-full)',
-    fontSize: '0.9rem',
-    fontWeight: 700,
-    cursor: 'pointer'
-  },
-  heroAvatarsBadge: {
-    position: 'relative' as const,
-    zIndex: 2,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.6rem',
-    marginTop: '2rem',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    backdropFilter: 'blur(6px)',
-    padding: '0.4rem 0.8rem',
-    borderRadius: 'var(--radius-full)',
-    width: 'fit-content'
-  },
-  stackedAvatars: {
-    display: 'flex',
-    alignItems: 'center'
-  },
-  avatarCircle: {
-    width: '24px',
-    height: '24px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '0.75rem',
-    color: '#fff',
-    border: '2px solid #fff'
-  },
-  avatarBadgeText: {
-    fontSize: '0.78rem',
-    fontWeight: 800,
-    color: '#052e16'
-  },
-  heroDoctorCard: {
-    position: 'relative' as const,
-    borderRadius: 'var(--radius-lg)',
-    overflow: 'hidden',
-    height: '260px',
-    border: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-card)'
-  },
-  doctorImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover' as const,
-    objectPosition: 'top center'
-  },
-  doctorOverlayBadge: {
-    position: 'absolute' as const,
-    bottom: '12px',
-    left: '12px',
-    right: '12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    backdropFilter: 'blur(8px)',
-    borderRadius: 'var(--radius-md)',
-    padding: '0.6rem 0.85rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.65rem',
-    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)'
-  },
-  badgeIconCircle: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    backgroundColor: '#86efac',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  badgeSmallLabel: {
-    fontSize: '0.65rem',
-    fontWeight: 700,
-    color: 'var(--text-muted)',
-    textTransform: 'uppercase' as const
-  },
-  badgeBigMetric: {
-    margin: 0,
-    fontSize: '1.15rem',
-    fontWeight: 900,
-    color: 'var(--text-main)'
-  },
-  heroProgressCard: {
-    position: 'relative' as const,
-    backgroundColor: 'var(--bg-card)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '1.5rem',
-    border: '1px solid var(--border-color)',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    justifyContent: 'space-between',
-    height: '160px'
-  },
-  tagChipsRow: {
-    display: 'flex',
-    gap: '0.4rem',
-    flexWrap: 'wrap' as const
-  },
-  miniTagChip: {
-    fontSize: '0.65rem',
-    fontWeight: 700,
-    color: 'var(--text-muted)',
-    backgroundColor: 'var(--bg-secondary)',
-    padding: '0.15rem 0.5rem',
-    borderRadius: 'var(--radius-full)',
-    border: '1px solid var(--border-color)'
-  },
-  progressCardTitle: {
-    fontSize: '1.1rem',
-    fontWeight: 900,
-    color: 'var(--text-main)',
-    margin: 0
-  },
-  orbitNodesContainer: {
-    position: 'absolute' as const,
-    inset: 0,
-    pointerEvents: 'none' as const
-  },
-  orbitNode: {
-    position: 'absolute' as const,
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  howItWorksSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1.75rem',
-    marginTop: '1rem'
-  },
-  sectionHeaderRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    width: '100%'
-  },
-  sectionBigTitle: {
-    fontSize: '2.1rem',
-    fontWeight: 900,
-    color: 'var(--text-main)',
-    letterSpacing: '-0.03em',
-    lineHeight: 1.15,
-    margin: 0
-  },
-  sectionDescText: {
-    fontSize: '0.85rem',
-    color: 'var(--text-muted)',
-    lineHeight: 1.5,
-    margin: 0
-  },
-  viewMoreBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-    background: 'none',
+    backgroundColor: 'var(--primary)',
+    color: '#ffffff',
     border: 'none',
-    fontSize: '0.85rem',
-    fontWeight: 800,
-    color: 'var(--text-main)',
+    padding: '0.8rem 1.5rem',
+    borderRadius: 'var(--radius-md)',
+    fontSize: '1rem',
+    fontWeight: 600,
     cursor: 'pointer',
-    marginTop: '0.75rem'
+    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.2)',
   },
-  featureCardsGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    gap: '1.25rem'
-  },
-  bentoFeatureCard: {
+  secondaryBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
     backgroundColor: 'var(--bg-card)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '1.5rem',
+    color: 'var(--text-main)',
     border: '1px solid var(--border-color)',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    justifyContent: 'space-between',
-    minHeight: '200px',
+    padding: '0.8rem 1.5rem',
+    borderRadius: 'var(--radius-md)',
+    fontSize: '1rem',
+    fontWeight: 600,
     cursor: 'pointer',
-    transition: 'all var(--transition-normal)'
   },
-  bentoFeatureCardActive: {
-    backgroundColor: 'var(--primary-light)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '1.5rem',
-    border: '1px solid var(--primary)',
+  statsRow: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    justifyContent: 'space-between',
-    minHeight: '200px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 20px rgba(var(--primary-rgb), 0.2)'
-  },
-  cardTopBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  cardCategoryTitle: {
-    fontSize: '1.05rem',
-    fontWeight: 900,
-    color: 'var(--text-main)'
-  },
-  arrowIconBtn: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    backgroundColor: 'var(--bg-secondary)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--text-main)'
-  },
-  arrowIconBtnActive: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    backgroundColor: '#86efac',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#052e16'
-  },
-  cardDesc: {
-    fontSize: '0.82rem',
-    color: 'var(--text-muted)',
-    lineHeight: 1.5,
-    margin: '1rem 0'
-  },
-  cardFooter: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  cardNumberText: {
-    fontSize: '1.25rem',
-    fontWeight: 900,
-    color: 'var(--text-muted)',
-    fontFamily: 'monospace'
-  },
-  whyChooseSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
     alignItems: 'center',
     gap: '2rem',
-    marginTop: '1.5rem'
+    marginTop: '2rem',
+    paddingTop: '2rem',
+    borderTop: '1px solid var(--border-color)',
   },
-  centerSectionHeader: {
-    textAlign: 'center' as const,
-    maxWidth: '560px'
+  statItem: {
+    display: 'flex',
+    flexDirection: 'column',
   },
-  centerTitle: {
-    fontSize: '2.2rem',
-    fontWeight: 900,
+  statNumber: {
+    fontSize: '2rem',
+    fontWeight: 800,
     color: 'var(--text-main)',
-    letterSpacing: '-0.03em',
-    lineHeight: 1.15,
-    margin: 0
+    margin: 0,
   },
-  centerSubtitle: {
-    fontSize: '0.88rem',
+  statLabel: {
+    fontSize: '0.9rem',
     color: 'var(--text-muted)',
-    marginTop: '0.75rem',
-    lineHeight: 1.5
+    margin: 0,
   },
-  whyGrid: {
+  statDivider: {
+    width: '1px',
+    height: '40px',
+    backgroundColor: 'var(--border-color)',
+  },
+  heroImageWrapper: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroImageBg: {
+    position: 'absolute',
+    width: '80%',
+    height: '80%',
+    backgroundColor: 'var(--primary-light)',
+    borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+    zIndex: 0,
+  },
+  heroImage: {
+    width: '90%',
+    maxWidth: '500px',
+    zIndex: 1,
+    objectFit: 'contain',
+  },
+  floatingBadge: {
+    position: 'absolute',
+    bottom: '10%',
+    left: '0',
+    backgroundColor: 'var(--bg-card)',
+    padding: '1rem',
+    borderRadius: 'var(--radius-md)',
+    boxShadow: 'var(--shadow-lg)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    zIndex: 2,
+    border: '1px solid var(--border-color)',
+  },
+  floatingIconBox: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--primary-light)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingBadgeText: {
+    fontSize: '0.75rem',
+    color: 'var(--text-muted)',
+    margin: 0,
+    fontWeight: 600,
+  },
+  floatingBadgeTitle: {
+    fontSize: '1.1rem',
+    color: 'var(--text-main)',
+    margin: 0,
+    fontWeight: 800,
+  },
+
+  // QUICK ACTIONS
+  quickActionsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '1.5rem',
+  },
+  actionCard: {
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
+    borderRadius: 'var(--radius-md)',
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    cursor: 'pointer',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+    boxShadow: 'var(--shadow-sm)',
+  },
+  actionIcon: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionTitle: {
+    fontSize: '1.1rem',
+    fontWeight: 700,
+    margin: 0,
+    color: 'var(--text-main)',
+  },
+  actionDesc: {
+    fontSize: '0.9rem',
+    color: 'var(--text-muted)',
+    margin: 0,
+    lineHeight: 1.5,
+  },
+
+  // BOOKING & SCHEDULE ROW
+  bookingRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1.5fr',
+    gap: '2rem',
+  },
+  workingHoursCard: {
+    backgroundColor: 'var(--bg-primary)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '2rem',
+    border: '1px solid var(--border-color)',
+  },
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    marginBottom: '1rem',
+  },
+  sectionTitle: {
+    fontSize: '1.5rem',
+    fontWeight: 800,
+    color: 'var(--text-main)',
+    margin: 0,
+  },
+  workingDesc: {
+    fontSize: '0.95rem',
+    color: 'var(--text-muted)',
+    lineHeight: 1.6,
+    marginBottom: '2rem',
+    marginTop: 0,
+  },
+  scheduleList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  scheduleItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: '1rem',
+    borderBottom: '1px dashed var(--border-color)',
+  },
+  scheduleDay: {
+    fontWeight: 600,
+    color: 'var(--text-main)',
+  },
+  scheduleTime: {
+    color: 'var(--text-muted)',
+    fontSize: '0.95rem',
+  },
+  emergencyBox: {
+    marginTop: '2rem',
+    backgroundColor: 'var(--danger)',
+    color: '#ffffff',
+    padding: '1.25rem',
+    borderRadius: 'var(--radius-md)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  },
+  bookingCard: {
+    backgroundColor: 'var(--bg-card)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '2rem',
+    border: '1px solid var(--border-color)',
+    boxShadow: 'var(--shadow-md)',
+  },
+  bookingTitle: {
+    fontSize: '1.75rem',
+    fontWeight: 800,
+    color: 'var(--text-main)',
+    margin: '0 0 0.5rem 0',
+  },
+  bookingSubtitle: {
+    fontSize: '1rem',
+    color: 'var(--text-muted)',
+    margin: '0 0 2rem 0',
+  },
+  bookingForm: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.25rem',
+  },
+  formRow: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: '1.25rem',
-    width: '100%'
   },
-  whyCard: {
-    backgroundColor: 'var(--bg-card)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '1.75rem',
-    border: '1px solid var(--border-color)',
+  formGroup: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem'
-  },
-  whyCardLabel: {
-    fontSize: '0.75rem',
-    fontWeight: 800,
-    color: 'var(--text-muted)',
-    textTransform: 'uppercase' as const
-  },
-  whyCardSub: {
-    fontSize: '1.2rem',
-    fontWeight: 900,
-    color: 'var(--text-main)',
-    margin: 0
-  },
-  countryPillGrid: {
-    display: 'flex',
+    flexDirection: 'column',
     gap: '0.5rem',
-    flexWrap: 'wrap' as const,
-    marginTop: '1rem'
   },
-  countryPill: {
-    fontSize: '0.75rem',
-    fontWeight: 700,
+  formLabel: {
+    fontSize: '0.9rem',
+    fontWeight: 600,
     color: 'var(--text-main)',
-    backgroundColor: 'var(--bg-secondary)',
-    padding: '0.3rem 0.75rem',
-    borderRadius: 'var(--radius-full)',
-    border: '1px solid var(--border-color)'
   },
-  accessSphereVisual: {
-    height: '100px',
+  formInput: {
+    padding: '0.75rem 1rem',
+    borderRadius: 'var(--radius-sm)',
+    border: '1px solid var(--border-color)',
+    backgroundColor: 'var(--bg-secondary)',
+    color: 'var(--text-main)',
+    fontSize: '0.95rem',
+    outline: 'none',
+  },
+  submitBtn: {
+    backgroundColor: 'var(--primary)',
+    color: '#ffffff',
+    border: 'none',
+    padding: '1rem',
+    borderRadius: 'var(--radius-sm)',
+    fontSize: '1rem',
+    fontWeight: 700,
+    cursor: 'pointer',
+    marginTop: '1rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: '0.5rem'
+    gap: '0.5rem',
   },
-  sphereOrb: {
+  recentBookings: {
+    marginTop: '2rem',
+    paddingTop: '1.5rem',
+    borderTop: '1px solid var(--border-color)',
+  },
+  recentBookingsTitle: {
+    fontSize: '1rem',
+    fontWeight: 700,
+    color: 'var(--text-main)',
+    margin: '0 0 1rem 0',
+  },
+  appointmentsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
+  },
+  appointmentBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    padding: '0.75rem',
+    backgroundColor: 'var(--bg-secondary)',
+    borderRadius: 'var(--radius-sm)',
+    fontSize: '0.9rem',
+    color: 'var(--text-main)',
+    fontWeight: 500,
+  },
+
+  // COMMON SECTION STYLES
+  sectionContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2.5rem',
+  },
+  sectionHeaderCenter: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: '1rem',
+    maxWidth: '600px',
+    margin: '0 auto',
+  },
+  sectionBigTitle: {
+    fontSize: '2.5rem',
+    fontWeight: 800,
+    color: 'var(--text-main)',
+    margin: 0,
+    lineHeight: 1.2,
+  },
+  sectionDescTextCenter: {
+    fontSize: '1.1rem',
+    color: 'var(--text-muted)',
+    lineHeight: 1.6,
+    margin: 0,
+  },
+
+  // DOCTORS GRID
+  doctorsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '1.5rem',
+  },
+  doctorCard: {
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    boxShadow: 'var(--shadow-sm)',
+  },
+  docCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  docAvatarBox: {
+    width: '56px',
+    height: '56px',
+    borderRadius: '16px',
+    backgroundColor: 'var(--primary-light)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  docStatusBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    padding: '0.3rem 0.6rem',
+    borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--bg-secondary)',
+    color: 'var(--text-main)',
+  },
+  docName: {
+    fontSize: '1.25rem',
+    fontWeight: 800,
+    color: 'var(--text-main)',
+    margin: '0.5rem 0 0 0',
+  },
+  docSpec: {
+    fontSize: '0.9rem',
+    color: 'var(--primary)',
+    fontWeight: 600,
+    margin: 0,
+  },
+  docScheduleBox: {
+    backgroundColor: 'var(--bg-secondary)',
+    padding: '1rem',
+    borderRadius: 'var(--radius-sm)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+    marginTop: '0.5rem',
+  },
+  docScheduleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.85rem',
+    color: 'var(--text-main)',
+    fontWeight: 500,
+  },
+  docBookBtn: {
+    backgroundColor: 'transparent',
+    color: 'var(--primary)',
+    border: '1px solid var(--primary)',
+    padding: '0.75rem',
+    borderRadius: 'var(--radius-sm)',
+    fontSize: '0.95rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    marginTop: '0.5rem',
+    transition: 'all var(--transition-fast)',
+  },
+
+  // DEPARTMENTS
+  departmentsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '1.5rem',
+  },
+  deptCard: {
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
+    borderRadius: 'var(--radius-md)',
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: '1rem',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+  },
+  deptIconBox: {
     width: '64px',
     height: '64px',
     borderRadius: '50%',
-    backgroundColor: '#f0fdf4',
-    border: '2px solid #86efac',
+    backgroundColor: 'var(--primary-light)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 0 20px rgba(134, 239, 172, 0.4)'
   },
-  telemetry3DSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1.25rem',
-    marginTop: '1rem'
-  },
-  telemetryCardContainer: {
-    width: '100%'
-  },
-  newsletterBanner: {
-    display: 'grid',
-    gridTemplateColumns: '1.2fr 0.8fr',
-    backgroundColor: '#bbf7d0', // Soft mint banner
-    borderRadius: 'var(--radius-lg)',
-    padding: '2.5rem',
-    overflow: 'hidden',
-    alignItems: 'center',
-    border: '1px solid #86efac'
-  },
-  newsletterLeftContent: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1.25rem'
-  },
-  newsletterTitle: {
-    fontSize: '2.2rem',
-    fontWeight: 900,
-    color: '#052e16',
-    lineHeight: 1.1,
-    letterSpacing: '-0.03em',
-    margin: 0
-  },
-  newsletterForm: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 'var(--radius-full)',
-    padding: '0.35rem 0.4rem 0.35rem 1rem',
-    maxWidth: '420px',
-    boxShadow: '0 4px 14px rgba(5, 46, 22, 0.1)'
-  },
-  newsletterInput: {
-    flex: 1,
-    border: 'none',
-    outline: 'none',
-    fontSize: '0.85rem',
-    color: '#052e16'
-  },
-  newsletterSubmitBtn: {
-    backgroundColor: '#052e16',
-    color: '#ffffff',
-    border: 'none',
-    padding: '0.6rem 1.2rem',
-    borderRadius: 'var(--radius-full)',
-    fontSize: '0.85rem',
-    fontWeight: 800,
-    cursor: 'pointer'
-  },
-  subscribeSuccessToast: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-    fontSize: '0.8rem',
+  deptTitle: {
+    fontSize: '1.1rem',
     fontWeight: 700,
-    color: '#15803d'
+    color: 'var(--text-main)',
+    margin: 0,
   },
-  newsletterTagsRow: {
-    display: 'flex',
-    gap: '0.5rem',
-    flexWrap: 'wrap' as const,
-    marginTop: '0.5rem'
+  deptDesc: {
+    fontSize: '0.85rem',
+    color: 'var(--text-muted)',
+    lineHeight: 1.5,
+    margin: 0,
   },
-  newsletterTagChip: {
-    fontSize: '0.75rem',
-    fontWeight: 700,
-    color: '#052e16',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    padding: '0.3rem 0.75rem',
-    borderRadius: 'var(--radius-full)'
-  },
-  newsletterRightDoctor: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '240px'
-  },
-  doctorNewsletterImg: {
-    height: '100%',
-    objectFit: 'contain' as const
-  },
+
+  // FOOTER
   footerContainer: {
-    borderTop: '1px solid var(--border-color)',
-    paddingTop: '2.5rem',
-    marginTop: '1rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '2rem'
+    backgroundColor: '#0f172a',
+    color: '#ffffff',
+    padding: '4rem 2rem 2rem 2rem',
+    borderRadius: 'var(--radius-lg)',
+    marginTop: '2rem',
   },
   footerTopGrid: {
     display: 'grid',
-    gridTemplateColumns: '1.2fr 1fr 1fr 1fr',
-    gap: '2rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '3rem',
+    marginBottom: '3rem',
   },
   footerColTitle: {
-    fontSize: '0.9rem',
-    fontWeight: 900,
-    color: 'var(--text-main)',
-    marginBottom: '0.85rem'
+    fontSize: '1.1rem',
+    fontWeight: 700,
+    marginBottom: '1.5rem',
+    color: '#ffffff',
+    margin: 0,
   },
   footerLinksList: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem'
+    flexDirection: 'column',
+    gap: '1rem',
   },
   footerLink: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    transition: 'color var(--transition-fast)',
     background: 'none',
     border: 'none',
-    textAlign: 'left' as const,
-    fontSize: '0.82rem',
-    color: 'var(--text-muted)',
-    cursor: 'pointer',
-    padding: 0
-  },
-  footerStaticText: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-    fontSize: '0.82rem',
-    color: 'var(--text-muted)'
+    padding: 0,
+    textAlign: 'left',
   },
   footerBottomRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    fontSize: '0.78rem',
-    color: 'var(--text-muted)',
-    borderTop: '1px solid var(--border-color)',
-    paddingTop: '1rem'
-  },
-  modalOverlay: {
-    position: 'fixed' as const,
-    inset: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    backdropFilter: 'blur(6px)',
-    zIndex: 1000,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '1rem'
-  },
-  modalCard: {
-    backgroundColor: 'var(--bg-card)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '2rem',
-    maxWidth: '480px',
-    width: '100%',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
-    border: '1px solid var(--border-color)'
+    paddingTop: '2rem',
+    borderTop: '1px solid rgba(255,255,255,0.1)',
+    fontSize: '0.85rem',
+    color: 'rgba(255,255,255,0.5)',
+    flexWrap: 'wrap',
+    gap: '1rem',
   }
 };
