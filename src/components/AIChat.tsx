@@ -391,11 +391,11 @@ export default function AIChat({ initialChatText, setInitialChatText, setCurrent
               <div
                 style={{
                   ...styles.bubble,
-                  backgroundColor: msg.sender === 'user' ? '#0f172a' : '#ffffff',
-                  color: msg.sender === 'user' ? '#ffffff' : 'var(--text-main)',
+                  backgroundColor: msg.sender === 'user' ? 'var(--user-bubble-bg)' : 'var(--bg-card)',
+                  color: msg.sender === 'user' ? 'var(--user-bubble-text)' : 'var(--text-main)',
                   borderBottomRightRadius: msg.sender === 'user' ? '4px' : '16px',
                   borderBottomLeftRadius: msg.sender === 'user' ? '16px' : '4px',
-                  border: msg.sender === 'bot' ? '1px solid #e2e8f0' : 'none',
+                  border: msg.sender === 'bot' ? '1px solid var(--border-color)' : '1px solid var(--user-bubble-border)',
                   boxShadow: msg.sender === 'bot' ? '0 2px 12px rgba(0, 0, 0, 0.04)' : '0 2px 8px rgba(15, 23, 42, 0.15)'
                 }}
               >
@@ -699,9 +699,9 @@ const styles = {
     overflow: 'hidden' as const,
     padding: '1.25rem',
     position: 'relative' as const,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--bg-card)',
     borderRadius: 'var(--radius-lg)',
-    border: '1px solid #e2e8f0',
+    border: '1px solid var(--border-color)',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)'
   },
   messagesContainer: {
@@ -879,12 +879,12 @@ const styles = {
     paddingBottom: '0.2rem'
   },
   chip: {
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
     padding: '0.38rem 0.85rem',
     borderRadius: 'var(--radius-full)',
     fontSize: '0.78rem',
-    color: '#0f172a',
+    color: 'var(--text-main)',
     fontWeight: 500,
     cursor: 'pointer',
     display: 'flex',
@@ -908,12 +908,12 @@ const styles = {
     justifyContent: 'center',
     gap: '0.4rem',
     padding: '0.45rem 0.75rem',
-    backgroundColor: '#f8fafc',
-    border: '1px solid #e2e8f0',
+    backgroundColor: 'var(--bg-secondary)',
+    border: '1px solid var(--border-color)',
     borderRadius: 'var(--radius-full)',
     fontSize: '0.78rem',
     fontWeight: 600,
-    color: '#0f172a',
+    color: 'var(--text-main)',
     cursor: 'pointer',
     transition: 'all var(--transition-fast)'
   },
@@ -921,10 +921,10 @@ const styles = {
     display: 'flex',
     gap: '0.6rem',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'var(--bg-secondary)',
     padding: '0.4rem 0.6rem',
     borderRadius: 'var(--radius-full)',
-    border: '1px solid #e2e8f0',
+    border: '1px solid var(--border-color)',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)'
   },
   voiceBtn: {
@@ -945,15 +945,15 @@ const styles = {
     outline: 'none',
     backgroundColor: 'transparent',
     fontSize: '0.9rem',
-    color: '#0f172a'
+    color: 'var(--text-main)'
   },
   sendBtn: {
     width: '38px',
     height: '38px',
     borderRadius: '50%',
     padding: 0,
-    backgroundColor: '#0f172a',
-    color: '#ffffff',
+    backgroundColor: 'var(--text-main)',
+    color: 'var(--bg-primary)',
     border: 'none',
     display: 'flex',
     alignItems: 'center',

@@ -49,6 +49,11 @@
 
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* User Chat Bubble (Light Mode) */
+  --user-bubble-bg: #f1f5f9;
+  --user-bubble-text: #0f172a;
+  --user-bubble-border: #e2e8f0;
 }
 
 /* Dark Theme Color Tokens */
@@ -88,6 +93,11 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
   --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+
+  /* User Chat Bubble (Dark Mode) */
+  --user-bubble-bg: #1e293b;
+  --user-bubble-text: #ffffff;
+  --user-bubble-border: #334155;
 }
 
 /* Reset & Base Styles */
@@ -107,10 +117,18 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Ensure all text elements inherit theme-aware colors */
+h1, h2, h3, h4, h5, h6,
+strong, b, label, span, li, td, th, dt, dd {
+  color: inherit;
+  transition: color var(--transition-normal);
+}
+
 button, input, select, textarea {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
+  transition: color var(--transition-normal), background-color var(--transition-normal), border-color var(--transition-normal);
 }
 
 /* Layout Containers */
@@ -1227,8 +1245,65 @@ input:checked + .switch-slider:before {
   100% { opacity: 1.0; }
 }
 
+/* --- Theme Transition & Dark Mode Text Visibility Overrides --- */
 
+/* Global transition for theme-aware elements */
+.glass-card,
+.halo-card,
+.halo-sidebar,
+.halo-header,
+.main-content,
+.halo-app-container {
+  transition: background-color var(--transition-normal), color var(--transition-normal), border-color var(--transition-normal);
+}
 
+/* Dark mode: ensure headings and content text use white */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--text-main);
+}
 
+[data-theme="dark"] p {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] strong,
+[data-theme="dark"] b {
+  color: inherit;
+}
+
+/* Dark mode: form inputs and controls */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--bg-secondary);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-control::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-light);
+}
+
+/* Light mode: ensure headings and content text use black */
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6 {
+  color: var(--text-main);
+}
+
+[data-theme="light"] p {
+  color: var(--text-muted);
+}
 
 

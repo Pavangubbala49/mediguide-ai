@@ -484,8 +484,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    backgroundColor: '#09090b',
-    color: '#ffffff',
+    backgroundColor: 'var(--text-main)',
+    color: 'var(--bg-primary)',
     border: 'none',
     padding: '0.55rem 1.2rem',
     borderRadius: 'var(--radius-full)',
@@ -758,16 +758,16 @@ const styles = {
     transition: 'all var(--transition-normal)'
   },
   bentoFeatureCardActive: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: 'var(--primary-light)',
     borderRadius: 'var(--radius-lg)',
     padding: '1.5rem',
-    border: '1px solid #bbf7d0',
+    border: '1px solid var(--primary)',
     display: 'flex',
     flexDirection: 'column' as const,
     justifyContent: 'space-between',
     minHeight: '200px',
     cursor: 'pointer',
-    boxShadow: '0 4px 20px rgba(187, 247, 208, 0.3)'
+    boxShadow: '0 4px 20px rgba(var(--primary-rgb), 0.2)'
   },
   cardTopBar: {
     display: 'flex',
