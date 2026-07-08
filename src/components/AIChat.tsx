@@ -61,6 +61,7 @@ export default function AIChat({ initialChatText, setInitialChatText, setCurrent
       handleSendMessage(initialChatText);
       setInitialChatText(''); // reset
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialChatText]);
 
   // Scroll to bottom
@@ -143,7 +144,8 @@ export default function AIChat({ initialChatText, setInitialChatText, setCurrent
 
     // Clean markdown symbols for cleaner speech
     const cleanText = text
-      .replace(/[#*`_~🚨📌💡🔍📋⚙️💊⚠️👨‍⚕️🚑🛑👋]/g, '')
+      .replace(/👨‍⚕️|⚙️|⚠️/g, '')
+      .replace(/[#*`_~🚨📌💡🔍📋💊🚑🛑👋]/gu, '')
       .replace(/https?:\/\/\S+/g, '');
 
     const utterance = new SpeechSynthesisUtterance(cleanText);

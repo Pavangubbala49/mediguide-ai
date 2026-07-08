@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Info, AlertTriangle, FileText, Mic, Search, ChevronRight, Activity, ShieldCheck, ThermometerSnowflake, HeartPulse, Pill, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, FileText, Mic, Search, ChevronRight, Activity, ShieldCheck, ThermometerSnowflake, HeartPulse, Pill, ArrowLeft } from 'lucide-react';
 import { MEDICINES, type Medicine } from '../services/medicalData';
 
 interface MedicineInfoProps {
@@ -647,11 +647,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   detailsGrid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '1.5rem',
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: '1fr',
-    }
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '1.5rem'
   },
   detailCard: {
     backgroundColor: 'var(--bg-card)',

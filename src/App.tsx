@@ -8,7 +8,8 @@ import NearbyHospitals from './components/NearbyHospitals';
 import MedicineInfo from './components/MedicineInfo';
 import HealthHistory from './components/HealthHistory';
 import EmergencyHelp from './components/EmergencyHelp';
-import LoginPage, { getLocalUserSession, type UserSession } from './components/LoginPage';
+import LoginPage from './components/LoginPage';
+import { getLocalUserSession, type UserSession } from './services/authSession';
 
 import { type DiagnosisReport, getDiagnosisReports } from './services/medicalData';
 

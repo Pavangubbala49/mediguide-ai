@@ -33,7 +33,7 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
     if (saved) {
       try {
         setAppointments(JSON.parse(saved));
-      } catch (e) {
+      } catch {
         console.error('Failed to parse appointments');
       }
     }

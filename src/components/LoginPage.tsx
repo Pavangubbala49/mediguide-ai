@@ -28,39 +28,13 @@ import {
   type User as FirebaseUser 
 } from 'firebase/auth';
 
+import { getLocalUserSession, saveLocalUserSession, type UserSession } from '../services/authSession';
+
 interface LoginPageProps {
   setCurrentTab: (tab: string) => void;
   lang?: string;
   onLoginSuccess?: (session: UserSession) => void;
   onLogout?: () => void;
-}
-
-export interface UserSession {
-  email: string;
-  name: string;
-  role: 'patient' | 'doctor' | 'nurse' | 'researcher';
-  token: string;
-  isFirebase?: boolean;
-}
-
-// Get persisted user session from localStorage
-export function getLocalUserSession(): UserSession | null {
-  const data = localStorage.getItem('mediguide_user');
-  if (!data) return null;
-  try {
-    return JSON.parse(data);
-  } catch (e) {
-    return null;
-  }
-}
-
-// Save user session to localStorage
-export function saveLocalUserSession(session: UserSession | null) {
-  if (session) {
-    localStorage.setItem('mediguide_user', JSON.stringify(session));
-  } else {
-    localStorage.removeItem('mediguide_user');
-  }
 }
 
 export default function LoginPage({ setCurrentTab, onLoginSuccess, onLogout }: LoginPageProps) {
@@ -90,13 +64,14 @@ export default function LoginPage({ setCurrentTab, onLoginSuccess, onLogout }: L
           role: 'patient',
           token: fbUser.uid,
           isFirebase: true
-        };
+        } as UserSession; // Add role override type cast if needed
         setActiveUser(session);
         saveLocalUserSession(session);
         onLoginSuccess?.(session);
       }
     });
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const executeLogin = (userSession: UserSession, msg: string) => {
@@ -129,7 +104,7 @@ export default function LoginPage({ setCurrentTab, onLoginSuccess, onLogout }: L
       try {
         await sendPasswordResetEmail(auth, inputEmail);
         setSuccessMessage(`Password reset link sent to ${inputEmail}. Check your inbox.`);
-      } catch (err: any) {
+      } catch {
         setSuccessMessage(`Password reset simulation initiated for ${inputEmail}. Please check your inbox.`);
       } finally {
         setLoading(false);
@@ -231,7 +206,7 @@ export default function LoginPage({ setCurrentTab, onLoginSuccess, onLogout }: L
   const handleLogout = async () => {
     try {
       await signOut(auth);
-    } catch (e) {
+    } catch {
       // Ignore
     }
     setActiveUser(null);

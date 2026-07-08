@@ -1074,7 +1074,7 @@ export function getAdminProfile(): AdminProfile {
   }
   try {
     return JSON.parse(data);
-  } catch (e) {
+  } catch {
     return DEFAULT_ADMIN_PROFILE;
   }
 }
