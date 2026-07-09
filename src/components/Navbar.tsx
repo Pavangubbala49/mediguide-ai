@@ -18,7 +18,7 @@ import {
   LogIn
 } from 'lucide-react';
 import { LOCALIZATION } from '../services/medicalData';
-import type { UserSession } from './LoginPage';
+import type { UserSession } from '../services/authSession';
 
 interface NavbarProps {
   currentTab: string;

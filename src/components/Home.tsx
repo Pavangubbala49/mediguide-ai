@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
   ArrowRight, Activity, Calendar, Clock, Phone, MapPin, MessageSquare, 
-  HeartPulse, Pill, CalendarDays, User, CheckCircle2,
+  HeartPulse, Pill, User,
   Brain, Bone, Baby, Eye, Ear, ShieldCheck, Mail
 } from 'lucide-react';
 import doctorHeroImg from '../assets/doctor_hero.png';
+import BookAppointmentSection from './BookAppointmentSection';
 
 interface HomeProps {
   setCurrentTab: (tab: string) => void;
@@ -26,7 +27,6 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [formData, setFormData] = useState({ name: '', department: '', date: '', time: '' });
-  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('mediguide_appointments');
@@ -39,22 +39,16 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
     }
   }, []);
 
-  const handleBookAppointment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.department || !formData.date || !formData.time) return;
 
+  const handleNewBookAppointment = (apt: { date: string, time: string, name: string, department: string }) => {
     const newAppointment: Appointment = {
       id: Date.now().toString(),
-      ...formData
+      ...apt
     };
 
     const updated = [newAppointment, ...appointments];
     setAppointments(updated);
     localStorage.setItem('mediguide_appointments', JSON.stringify(updated));
-    
-    setFormData({ name: '', department: '', date: '', time: '' });
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
   };
 
   const handleStartSearch = (query: string) => {
@@ -196,117 +190,7 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
       </section>
 
       {/* WORKING HOURS & BOOKING ROW */}
-      <section style={styles.bookingRow} id="booking">
-        {/* Working Hours */}
-        <div style={styles.workingHoursCard}>
-          <div style={styles.sectionHeader}>
-            <Clock size={24} color="var(--primary)" />
-            <h2 style={styles.sectionTitle}>Working Hours</h2>
-          </div>
-          <p style={styles.workingDesc}>
-            Our facilities operate round-clock for emergencies. Regular OPD consultations follow the schedule below.
-          </p>
-          
-          <div style={styles.scheduleList}>
-            <div style={styles.scheduleItem}>
-              <span style={styles.scheduleDay}>Monday - Friday</span>
-              <span style={styles.scheduleTime}>08:00 AM - 08:00 PM</span>
-            </div>
-            <div style={styles.scheduleItem}>
-              <span style={styles.scheduleDay}>Saturday</span>
-              <span style={styles.scheduleTime}>09:00 AM - 05:00 PM</span>
-            </div>
-            <div style={styles.scheduleItem}>
-              <span style={styles.scheduleDay}>Sunday</span>
-              <span style={{ ...styles.scheduleTime, color: 'var(--danger)', fontWeight: 600 }}>Emergency Only (24/7)</span>
-            </div>
-          </div>
-
-          <div style={styles.emergencyBox}>
-            <Phone size={20} />
-            <div>
-              <span style={{ display: 'block', fontSize: '0.8rem', opacity: 0.9 }}>Emergency Ambulance</span>
-              <strong style={{ fontSize: '1.1rem' }}>911 or +1 234 567 890</strong>
-            </div>
-          </div>
-        </div>
-
-        {/* Booking Form */}
-        <div style={styles.bookingCard}>
-          <h2 style={styles.bookingTitle}>Book an Appointment</h2>
-          <p style={styles.bookingSubtitle}>Schedule your visit with our specialists.</p>
-          
-          <form style={styles.bookingForm} onSubmit={handleBookAppointment}>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Patient Name</label>
-              <input 
-                type="text" 
-                style={styles.formInput} 
-                placeholder="Full Name" 
-                value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
-                required 
-              />
-            </div>
-            <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Department / Specialty</label>
-              <select 
-                style={styles.formInput}
-                value={formData.department}
-                onChange={e => setFormData({...formData, department: e.target.value})}
-                required
-              >
-                <option value="">Select Department</option>
-                {departments.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
-                <option value="General">General Consultation</option>
-              </select>
-            </div>
-            <div style={styles.formRow}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Date</label>
-                <input 
-                  type="date" 
-                  style={styles.formInput} 
-                  value={formData.date}
-                  onChange={e => setFormData({...formData, date: e.target.value})}
-                  required 
-                />
-              </div>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Time Slot</label>
-                <select 
-                  style={styles.formInput}
-                  value={formData.time}
-                  onChange={e => setFormData({...formData, time: e.target.value})}
-                  required
-                >
-                  <option value="">Select Time</option>
-                  <option value="Morning (09:00 - 12:00)">Morning (09:00 - 12:00)</option>
-                  <option value="Afternoon (13:00 - 16:00)">Afternoon (13:00 - 16:00)</option>
-                  <option value="Evening (17:00 - 19:00)">Evening (17:00 - 19:00)</option>
-                </select>
-              </div>
-            </div>
-            <button type="submit" style={styles.submitBtn}>
-              {showToast ? <CheckCircle2 size={18} /> : 'Confirm Booking'}
-            </button>
-          </form>
-
-          {appointments.length > 0 && (
-            <div style={styles.recentBookings}>
-              <h4 style={styles.recentBookingsTitle}>Your Appointments</h4>
-              <div style={styles.appointmentsList}>
-                {appointments.slice(0, 2).map(apt => (
-                  <div key={apt.id} style={styles.appointmentBadge}>
-                    <CalendarDays size={14} color="var(--primary)" />
-                    <span>{apt.department} on {apt.date}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+      <BookAppointmentSection onBookAppointment={handleNewBookAppointment} />
 
       {/* SPECIALIST DOCTORS */}
       <section style={styles.sectionContainer} id="doctors">
