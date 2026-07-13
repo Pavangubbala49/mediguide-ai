@@ -130,9 +130,9 @@ export default function Navbar({
               onChange={(e) => setLang(e.target.value)}
               style={styles.select}
             >
-              <option value="en">EN</option>
-              <option value="es">ES</option>
-              <option value="hi">HI</option>
+              <option value="en" style={{ color: 'var(--text-main)', backgroundColor: 'var(--bg-primary)' }}>English</option>
+              <option value="hi" style={{ color: 'var(--text-main)', backgroundColor: 'var(--bg-primary)' }}>Hindi</option>
+              <option value="te" style={{ color: 'var(--text-main)', backgroundColor: 'var(--bg-primary)' }}>Telugu</option>
             </select>
           </div>
 
@@ -243,7 +243,7 @@ const styles = {
     color: 'var(--text-muted)'
   },
   select: {
-    background: 'none',
+    background: 'transparent',
     border: 'none',
     outline: 'none',
     fontSize: '0.78rem',

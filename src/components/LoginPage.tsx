@@ -185,8 +185,8 @@ export default function LoginPage({ setCurrentTab, onLoginSuccess, onLogout }: L
     setErrorMessage('');
     const isDoc = demoRole === 'doctor';
     const demoSession: UserSession = {
-      email: isDoc ? 'dr.smith@mediguide.ai' : 'patient.demo@mediguide.ai',
-      name: isDoc ? 'Dr. Sarah Smith' : 'Alex Johnson',
+      email: isDoc ? 'dr.sharma@mediguide.ai' : 'patient.demo@mediguide.ai',
+      name: isDoc ? 'Dr. Priya Sharma' : 'Rahul Sharma',
       role: demoRole,
       token: 'demo_' + Date.now(),
       isFirebase: false
@@ -376,7 +376,7 @@ export default function LoginPage({ setCurrentTab, onLoginSuccess, onLogout }: L
                       <input
                         type="text"
                         className="form-control"
-                        placeholder="Dr. Sarah Jenkins or John Doe"
+                        placeholder="Dr. Priya Sharma or Rahul Sharma"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         style={styles.input}

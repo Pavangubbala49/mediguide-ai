@@ -4,7 +4,7 @@ import {
   HeartPulse, Pill, User,
   Brain, Bone, Baby, Eye, Ear, ShieldCheck, Mail
 } from 'lucide-react';
-import doctorHeroImg from '../assets/doctor_hero.png';
+import doctorHeroImg from '../assets/indian_doctor_hero.png';
 import BookAppointmentSection from './BookAppointmentSection';
 
 interface HomeProps {
@@ -27,6 +27,8 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [formData, setFormData] = useState({ name: '', department: '', date: '', time: '' });
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<{name: string, spec: string} | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('mediguide_appointments');
@@ -66,12 +68,14 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
   ];
 
   const doctors = [
-    { name: 'Dr. Sarah Jenkins', spec: 'Cardiologist', qual: 'MD, FACC', days: 'Mon, Wed, Fri', time: '09:00 AM - 01:00 PM', available: true },
-    { name: 'Dr. Michael Chen', spec: 'Neurologist', qual: 'MD, PhD', days: 'Tue, Thu, Sat', time: '10:00 AM - 04:00 PM', available: true },
-    { name: 'Dr. Emily Rodriguez', spec: 'Pediatrician', qual: 'MD, FAAP', days: 'Mon - Fri', time: '08:00 AM - 02:00 PM', available: false },
-    { name: 'Dr. James Wilson', spec: 'Orthopedic Surgeon', qual: 'MD, FAAOS', days: 'Mon, Thu', time: '01:00 PM - 06:00 PM', available: true },
-    { name: 'Dr. Aisha Patel', spec: 'Dermatologist', qual: 'MD, FAAD', days: 'Wed, Fri, Sat', time: '09:00 AM - 03:00 PM', available: true },
-    { name: 'Dr. Robert Kim', spec: 'General Physician', qual: 'MD, FACP', days: 'Mon - Sat', time: '08:00 AM - 08:00 PM', available: true },
+    { name: 'Dr. Rajesh Khanna', spec: 'Cardiologist', qual: 'MBBS, MD (Cardiology)', days: 'Mon, Wed, Fri', time: '09:00 AM - 01:00 PM', available: true },
+    { name: 'Dr. Sunita Reddy', spec: 'Neurologist', qual: 'MBBS, DM (Neurology)', days: 'Tue, Thu, Sat', time: '10:00 AM - 04:00 PM', available: true },
+    { name: 'Dr. Vikram Singh', spec: 'Pediatrician', qual: 'MBBS, MD (Pediatrics)', days: 'Mon - Fri', time: '08:00 AM - 02:00 PM', available: false },
+    { name: 'Dr. Meera Desai', spec: 'Orthopedic Surgeon', qual: 'MBBS, MS (Orthopedics)', days: 'Mon, Thu', time: '01:00 PM - 06:00 PM', available: true },
+    { name: 'Dr. Aisha Patel', spec: 'Dermatologist', qual: 'MBBS, MD (Dermatology)', days: 'Wed, Fri, Sat', time: '09:00 AM - 03:00 PM', available: true },
+    { name: 'Dr. Ramesh Kumar', spec: 'General Physician', qual: 'MBBS, MD', days: 'Mon - Sat', time: '10:00 AM - 05:00 PM', available: true },
+    { name: 'Dr. Priya Sharma', spec: 'Gynecologist', qual: 'MBBS, MS', days: 'Tue, Thu, Sat', time: '11:00 AM - 04:00 PM', available: true },
+    { name: 'Dr. Ananya Gupta', spec: 'Psychiatrist', qual: 'MBBS, MD (Psychiatry)', days: 'Mon, Wed, Fri', time: '02:00 PM - 07:00 PM', available: false },
   ];
 
   return (
@@ -234,8 +238,9 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
               <button 
                 style={styles.docBookBtn}
                 onClick={() => {
-                  setFormData({ ...formData, department: doc.spec });
-                  document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
+                  setSelectedDoc({ name: doc.name, spec: doc.spec });
+                  setFormData({ name: '', department: doc.spec, date: '', time: '' });
+                  setShowDocModal(true);
                 }}
               >
                 Book Consultation
@@ -328,6 +333,76 @@ export default function Home({ setCurrentTab, setInitialChatText, lang }: HomePr
           </div>
         </div>
       </footer>
+
+      {showDocModal && selectedDoc && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <div style={styles.modalHeader}>
+              <h3 style={{ margin: 0, color: 'var(--text-main)', fontSize: '1.25rem', fontWeight: 800 }}>Book Appointment</h3>
+              <button onClick={() => setShowDocModal(false)} style={styles.closeBtn}>&times;</button>
+            </div>
+            <div style={{ padding: '1.5rem' }}>
+              <p style={{ margin: '0 0 1.5rem 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                Booking consultation with <strong style={{ color: 'var(--text-main)' }}>{selectedDoc.name}</strong> ({selectedDoc.spec})
+              </p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>PATIENT NAME *</label>
+                  <input 
+                    style={styles.modalInput} 
+                    value={formData.name} 
+                    onChange={e => setFormData({...formData, name: e.target.value})} 
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>DATE *</label>
+                    <input 
+                      type="date"
+                      style={styles.modalInput} 
+                      value={formData.date} 
+                      onChange={e => setFormData({...formData, date: e.target.value})} 
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>TIME *</label>
+                    <input 
+                      type="time"
+                      style={styles.modalInput} 
+                      value={formData.time} 
+                      onChange={e => setFormData({...formData, time: e.target.value})} 
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  style={{...styles.primaryBtn, marginTop: '1rem', width: '100%'}} 
+                  onClick={() => {
+                    if (formData.name && formData.date && formData.time) {
+                      handleNewBookAppointment({
+                        name: formData.name,
+                        department: `${selectedDoc.spec} - ${selectedDoc.name}`,
+                        date: formData.date,
+                        time: formData.time
+                      });
+                      setShowDocModal(false);
+                      setFormData({ name: '', department: '', date: '', time: '' });
+                      alert('Appointment booked successfully!');
+                    } else {
+                      alert('Please fill all required details.');
+                    }
+                  }}
+                >
+                  Confirm Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
@@ -951,5 +1026,53 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'rgba(255,255,255,0.5)',
     flexWrap: 'wrap',
     gap: '1rem',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: '1rem',
+    backdropFilter: 'blur(4px)'
+  },
+  modalContent: {
+    backgroundColor: 'var(--bg-card)',
+    borderRadius: '1rem',
+    width: '100%',
+    maxWidth: '500px',
+    boxShadow: 'var(--shadow-lg)',
+    border: '1px solid var(--border-color)',
+    overflow: 'hidden'
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1.25rem 1.5rem',
+    borderBottom: '1px solid var(--border-color)',
+    backgroundColor: 'var(--bg-secondary)'
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    lineHeight: 1,
+    cursor: 'pointer',
+    color: 'var(--text-muted)',
+    padding: 0
+  },
+  modalInput: {
+    padding: '0.8rem 1rem',
+    border: '1px solid var(--border-color)',
+    borderRadius: '0.5rem',
+    fontSize: '0.95rem',
+    outline: 'none',
+    color: 'var(--text-main)',
+    backgroundColor: 'var(--bg-primary)',
+    width: '100%',
+    boxSizing: 'border-box'
   }
 };

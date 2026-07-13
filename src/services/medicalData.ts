@@ -528,27 +528,27 @@ export const HOSPITALS: Hospital[] = [
 
 // 5. Localization Dictionary
 export const LOCALIZATION: { [key: string]: { [lang: string]: string } } = {
-  home: { en: 'Home', es: 'Inicio', hi: 'होम' },
-  aiChat: { en: 'AI Chat', es: 'Chat de IA', hi: 'एआई चैट' },
-  symptomChecker: { en: 'Symptom Checker', es: 'Evaluador de Síntomas', hi: 'लक्षण जांच' },
-  human3d: { en: '3D Human Engine', es: 'Motor Humano 3D', hi: '3D मानव इंजन' },
-  diseasePrediction: { en: 'Disease Prediction', es: 'Predicción de Enfermedades', hi: 'रोग का अनुमान' },
-  specialistRecommend: { en: 'Specialist Recommendation', es: 'Especialista Recomendado', hi: 'चिकित्सक की सलाह' },
-  hospitals: { en: 'Nearby Hospitals', es: 'Hospitales Cercanos', hi: 'नजदीकी अस्पताल' },
-  medicines: { en: 'Medicine Search', es: 'Buscar Medicamentos', hi: 'दवा खोज' },
-  history: { en: 'Health History', es: 'Historial Médico', hi: 'स्वास्थ्य इतिहास' },
-  emergency: { en: 'Emergency Help', es: 'Ayuda Urgente', hi: 'आपातकालीन सहायता' },
-  admin: { en: 'Admin Panel', es: 'Panel Admin', hi: 'एडमिन पैनल' },
-  login: { en: 'Sign In / Login', es: 'Iniciar Sesión', hi: 'लॉग इन करें' },
-  profile: { en: 'User Profile', es: 'Perfil de Usuario', hi: 'प्रोफाइल' },
+  home: { en: 'Home', hi: 'होम', te: 'హోమ్' },
+  aiChat: { en: 'AI Chat', hi: 'एआई चैट', te: 'ఏఐ చాట్' },
+  symptomChecker: { en: 'Symptom Checker', hi: 'लक्षण जांच', te: 'లక్షణాల తనిఖీ' },
+  human3d: { en: '3D Human Engine', hi: '3D मानव इंजन', te: '3D మానవ ఇంజిన్' },
+  diseasePrediction: { en: 'Disease Prediction', hi: 'रोग का अनुमान', te: 'వ్యాధి అంచనా' },
+  specialistRecommend: { en: 'Specialist Recommendation', hi: 'चिकित्सक की सलाह', te: 'నిపుణుల సిఫార్సు' },
+  hospitals: { en: 'Nearby Hospitals', hi: 'नजदीकी अस्पताल', te: 'సమీప ఆసుపత్రులు' },
+  medicines: { en: 'Medicine Search', hi: 'दवा खोज', te: 'మందుల శోధన' },
+  history: { en: 'Health History', hi: 'स्वास्थ्य इतिहास', te: 'ఆరోగ్య చరిత్ర' },
+  emergency: { en: 'Emergency Help', hi: 'आपातकालीन सहायता', te: 'అత్యవసర సహాయం' },
+  admin: { en: 'Admin Panel', hi: 'एडमिन पैनल', te: 'అడ్మిన్ ప్యానెల్' },
+  login: { en: 'Sign In / Login', hi: 'लॉग इन करें', te: 'లాగిన్' },
+  profile: { en: 'User Profile', hi: 'प्रोफाइल', te: 'ప్రొఫైల్' },
 
-  welcomeTitle: { en: 'Welcome to MediGuide AI', es: 'Bienvenido a MediGuide AI', hi: 'MediGuide AI में आपका स्वागत है' },
-  welcomeSubtitle: { en: 'Your Personal, Smart Health Companion & Guided Diagnostic Engine.', es: 'Su compañero de salud personal inteligente y motor de diagnóstico guiado.', hi: 'आपका व्यक्तिगत, स्मार्ट स्वास्थ्य साथी और निर्देशित नैदानिक ​​इंजन।' },
-  startDiagBtn: { en: 'Start Diagnosis Assessment', es: 'Iniciar Evaluación de Diagnóstico', hi: 'लक्षणों की जांच शुरू करें' },
-  quickChatTitle: { en: 'Quick AI Health Assistant', es: 'Asistente de Salud Inteligente Rápido', hi: 'त्वरित एआई स्वास्थ्य सहायक' },
-  chatPlaceholder: { en: 'Describe symptoms or ask a health question...', es: 'Describe tus síntomas o haz una pregunta...', hi: 'लक्षण बताएं या स्वास्थ्य से जुड़ा सवाल पूछें...' },
-  voiceActive: { en: 'Listening to your voice...', es: 'Escuchando tu voz...', hi: 'आपकी आवाज सुनी जा रही है...' },
-  disclaimerText: { en: 'IMPORTANT: MediGuide AI is an educational simulation. It does not replace professional medical advice, diagnosis, or treatment. Always call your local emergency services (911/108/112) in life-threatening scenarios.', es: 'IMPORTANTE: MediGuide AI es una simulación educativa. No reemplaza el consejo médico, diagnóstico o tratamiento profesional.', hi: 'महत्वपूर्ण: MediGuide AI एक शैक्षणिक सिमुलेशन है। यह पेशेवर चिकित्सा सलाह, निदान या उपचार का स्थान नहीं लेता है।' }
+  welcomeTitle: { en: 'Welcome to MediGuide AI', hi: 'MediGuide AI में आपका स्वागत है', te: 'MediGuide AI కు స్వాగతం' },
+  welcomeSubtitle: { en: 'Your Personal, Smart Health Companion & Guided Diagnostic Engine.', hi: 'आपका व्यक्तिगत, स्मार्ट स्वास्थ्य साथी और निर्देशित नैदानिक ​​इंजन।', te: 'మీ వ్యక్తిగత, స్మార్ట్ ఆరోగ్య సహచరుడు మరియు రోగనిర్ధారణ ఇంజిన్.' },
+  startDiagBtn: { en: 'Start Diagnosis Assessment', hi: 'लक्षणों की जांच शुरू करें', te: 'రోగ నిర్ధారణ ప్రారంభించండి' },
+  quickChatTitle: { en: 'Quick AI Health Assistant', hi: 'त्वरित एआई स्वास्थ्य सहायक', te: 'త్వరిత AI ఆరోగ్య సహాయకుడు' },
+  chatPlaceholder: { en: 'Describe symptoms or ask a health question...', hi: 'लक्षण बताएं या स्वास्थ्य से जुड़ा सवाल पूछें...', te: 'లక్షణాలను వివరించండి లేదా ఆరోగ్య ప్రశ్న అడగండి...' },
+  voiceActive: { en: 'Listening to your voice...', hi: 'आपकी आवाज सुनी जा रही है...', te: 'మీ వాయిస్ వింటున్నాము...' },
+  disclaimerText: { en: 'IMPORTANT: MediGuide AI is an educational simulation. It does not replace professional medical advice, diagnosis, or treatment. Always call your local emergency services (911/108/112) in life-threatening scenarios.', hi: 'महत्वपूर्ण: MediGuide AI एक शैक्षणिक सिमुलेशन है। यह पेशेवर चिकित्सा सलाह, निदान या उपचार का स्थान नहीं लेता है।', te: 'ముఖ్య గమనిక: MediGuide AI ఒక విద్యా సాధనం మాత్రమే. ఇది వైద్య నిపుణుల సలహాను భర్తీ చేయదు. ప్రాణాపాయ పరిస్థితులలో అత్యవసర సేవలకు కాల్ చేయండి.' }
 };
 
 // --- Storage & Helper Functions ---

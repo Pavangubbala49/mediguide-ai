@@ -288,7 +288,7 @@ export default function BookAppointmentSection({ onBookAppointment }: BookAppoin
                     <label style={styles.formLabel}>FULL NAME *</label>
                     <input 
                       style={styles.formInput} 
-                      placeholder="Dr. John Doe"
+                      placeholder="Dr. Rahul Sharma"
                       value={formData.name} 
                       onChange={e => setFormData({...formData, name: e.target.value})} 
                       required 
